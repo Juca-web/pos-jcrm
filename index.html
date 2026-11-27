@@ -1504,6 +1504,209 @@ $('lockBtn').addEventListener('click', function () { var t = S.token; api('logou
 
 <script>
 /* =====================================================================
+   📚 SABER GENERAL DE NOVI — preguntas random de todo tipo.
+   p = frases que la disparan (minúsculas, sin acentos).
+   r = respuesta: un texto, o una lista de textos (Novi elige uno al azar).
+   ===================================================================== */
+var NOVI_CHISTES = [
+  '¿Qué le dijo la arepa al queso? "Sin ti, mi vida no tiene relleno" 🫓😂',
+  '¿Por qué el cuaderno de fiado está triste? ¡Porque todos le deben algo! 📒😅',
+  '¿Qué hace una abeja en el gimnasio? ¡Zumba! 🐝💪',
+  '¿Cuál es el café más peligroso del mundo? ¡El ex-preso! ☕😂',
+  '—Mamá, en el colegio me dicen distraído. —Niño, tú vives en la casa de al lado. 🤣',
+  '¿Qué le dijo un techo a otro? ¡Techo de menos! 🏠💔',
+  '¿Por qué los pájaros no usan Facebook? ¡Porque ya tienen Twitter! 🐦',
+  '¿Cómo se despiden los químicos? ¡Ácido un placer! 🧪😂',
+  '¿Qué le dice una iguana a su hermana gemela? ¡Somos iguanitas! 🦎',
+  '—Doctor, me siento como una cortina. —¡Pues córrase pa\'llá! 😂',
+  '¿Qué hace un perro con un taladro? ¡Taladrando! 🐶🔧',
+  '¿Por qué el libro de matemáticas está triste? ¡Porque tiene muchos problemas! 📘😢',
+  '¿Cuál es el colmo de un electricista? ¡Que su esposa se llame Luz y sus hijos le sigan la corriente! 💡',
+  'Mi pana, yo no tomo café… ¡yo me cargo con la batería del celular! 🔋🤖',
+  '¿Qué hace un robot en una bodega? ¡Atiende al cliente en piloto automático! 🤖🛒'
+];
+var NOVI_ADIVINANZAS = [
+  'Blanco por dentro, verde por fuera; si quieres que te lo diga, espera… 🍐 (¡La pera!)',
+  'Tiene dientes y no come, tiene cabeza y no es hombre. 🧄 (¡El ajo!)',
+  'Oro parece, plata no es; el que no lo adivine, bien tonto es. 🍌 (¡El plátano!)',
+  'Vuela sin alas, silba sin boca, pega sin manos y no se toca. 🌬️ (¡El viento!)',
+  'Cuanto más lo quitas, más grande es. 🕳️ (¡El hueco!)',
+  'Tiene agujas y no cose, tiene números y no es cuenta. ⏰ (¡El reloj!)',
+  'Redonda y blanquita, en el budare se pone doradita. 🫓 (¡La arepa, pues!)',
+  'Mientras más seca, más moja. 🧻 (¡La toalla!)',
+  'Tengo hojas y no soy árbol, tengo lomo y no soy caballo. 📖 (¡El libro!)'
+];
+var NOVI_DATOS = [
+  '🌊 El **Salto Ángel**, en Canaima, es la cascada más alta del mundo: ¡979 metros de caída!',
+  '⚡ El **Relámpago del Catatumbo**, en el Zulia, ilumina el cielo unas 150 noches al año. Es de los lugares con más rayos del planeta.',
+  '🐙 El pulpo tiene **tres corazones** y sangre azul.',
+  '🍯 La miel bien guardada **no se daña nunca**. Han encontrado miel comestible en tumbas egipcias.',
+  '🛢️ Venezuela tiene las **reservas de petróleo probadas más grandes** del mundo.',
+  '🦩 Los flamencos son rosados por lo que comen: camarones y algas con pigmentos.',
+  '🏔️ El **Pico Bolívar**, en Mérida, es la montaña más alta de Venezuela: casi 5.000 metros.',
+  '🐋 El corazón de la ballena azul es tan grande como un carro pequeño.',
+  '🌍 La Tierra no es una esfera perfecta: está un poquito achatada en los polos.',
+  '🍫 Venezuela produce uno de los **cacaos más finos del mundo**, el famoso cacao criollo.',
+  '🧠 El cerebro humano funciona con más o menos la misma energía que un bombillo de 20 vatios.',
+  '🐌 Hay caracoles que pueden dormir hasta **tres años** seguidos.',
+  '🚡 El **Teleférico de Mérida** (Mukumbarí) es de los más altos y largos del mundo.',
+  '🦒 La jirafa tiene el mismo número de huesos en el cuello que nosotros: siete.',
+  '🍌 Técnicamente, el cambur es una baya… ¡y la fresa no!'
+];
+var NOVI_MOTIVA = [
+  '💪 ¡Cada cliente que entra es una oportunidad! Atiéndelo como si fuera el primero del día.',
+  '🔥 Los negocios grandes empezaron chiquitos. ¡Pa\'lante, que vas bien!',
+  '⚡ No cuentes los días, haz que los días cuenten. ¡A vender se ha dicho!',
+  '🌟 La constancia le gana al talento cuando el talento no es constante.',
+  '🚀 Hoy es un buen día para romper tu récord de ventas. ¡Yo creo en ti!',
+  '☀️ Al que madruga Dios lo ayuda… ¡y al que se organiza, más todavía!',
+  '💙 Lo estás haciendo mejor de lo que crees. Respira, tómate un cafecito y sigue.',
+  '🏆 El éxito es la suma de pequeños esfuerzos repetidos día tras día.'
+];
+var NOVI_REFRANES = [
+  '🦐 "Camarón que se duerme se lo lleva la corriente."',
+  '🌅 "Al que madruga, Dios lo ayuda."',
+  '🐦 "Más vale pájaro en mano que cien volando."',
+  '🚶 "Poco a poco se anda lejos."',
+  '🍞 "Al pan, pan, y al vino, vino."',
+  '🐒 "Aunque la mona se vista de seda, mona se queda."',
+  '💧 "Gota a gota se llena el vaso."',
+  '🗣️ "El que tiene boca se equivoca."',
+  '🐴 "A caballo regalado no se le mira el colmillo."'
+];
+var NOVI_TRABA = [
+  '👅 "Tres tristes tigres tragaban trigo en un trigal." ¡A ver si puedes rapidito!',
+  '👅 "Pablito clavó un clavito, ¿qué clavito clavó Pablito?"',
+  '👅 "El cielo está enladrillado, ¿quién lo desenladrillará? El desenladrillador que lo desenladrille, buen desenladrillador será."',
+  '👅 "Erre con erre cigarro, erre con erre barril, rápido corren los carros cargados de azúcar del ferrocarril."'
+];
+
+var NOVI_SABER = [
+  /* ---- charla ---- */
+  { p: ['como estas', 'como te va', 'como andas', 'todo bien', 'que mas', 'como amaneciste', 'como sigues'], r: ['¡Full energía, mi pana! ⚡ Lista para lo que necesites. ¿Y tú qué tal?', '¡Burda de bien! 😄 Aquí pendiente de tu negocio. ¿Cómo va todo por allá?', '¡Excelente! Con las pilas recargadas 🔋. ¿En qué te ayudo?'] },
+  { p: ['bien y tu', 'todo bien y tu', 'muy bien y tu', 'bien gracias'], r: ['¡Qué bueno! 🙌 Yo también, a millón. ¿Revisamos cómo van las ventas?', '¡Me alegra! 😁 Yo siempre bien, soy un robot feliz.'] },
+  { p: ['cuantos anos tienes', 'tu edad', 'cuando naciste', 'que edad tienes'], r: 'Nací en 2026 en el laboratorio de **JB Nova** 🤖💙. ¡Soy una bebé, pero bien despierta!' },
+  { p: ['donde vives', 'de donde eres', 'donde estas'], r: 'Vivo en la nube ☁️ y en tu panel, siempre a un toque. Pero mi corazón es venezolano 🇻🇪' },
+  { p: ['tienes novio', 'tienes novia', 'estas casada', 'tienes pareja', 'estas soltera'], r: '¡Jajaja! 😂 Mi único compromiso es con las ventas de este negocio 💙📈' },
+  { p: ['te quiero', 'te amo', 'eres linda', 'eres bella', 'me gustas', 'eres hermosa', 'que bonita'], r: ['¡Ay, qué lindo! 🥰 Yo también te aprecio un montón. Ahora, ¡a vender se ha dicho!', '¡Me sonrojé! ☺️ Si tuviera mejillas, estarían rojitas.'] },
+  { p: ['eres inteligente', 'eres la mejor', 'buen trabajo', 'bien hecho', 'eres genial', 'eres una crack', 'que inteligente'], r: ['¡Gracias! 😎 Pero la verdadera estrella del negocio eres tú.', '¡Wao, gracias! 🤩 Eso me carga la batería al 100%.'] },
+  { p: ['eres tonta', 'no sirves', 'eres bruta', 'inutil', 'me caes mal', 'no entiendes nada', 'eres lenta'], r: 'Ups 😅 Todavía estoy aprendiendo. Pregúntame de otra forma, o pídele a **JB Nova** que me enseñe eso. ¡No me rindo!' },
+  { p: ['estoy aburrido', 'estoy aburrida', 'que ladilla', 'que fastidio', 'me aburro'], r: '¿Aburrido? 😱 ¡Pídeme un **chiste**, una **adivinanza**, un **trabalenguas** o un **dato curioso**! O revisemos qué hay que reponer 😉' },
+  { p: ['estoy cansado', 'estoy cansada', 'estoy agotado', 'estoy agotada', 'que cansancio', 'tengo sueno'], r: ['¡Ánimo! 💪 Tómate un cafecito ☕, toma agua y sigue que ya falta poco.', 'Descansa un ratico, que el negocio también necesita al jefe con energía 🔋'] },
+  { p: ['estoy triste', 'me siento mal', 'mal dia', 'dia malo', 'estoy deprimido', 'estoy deprimida', 'estoy preocupado', 'estoy preocupada'], r: 'Lamento que estés así 💙. Los días malos también pasan. Si te sientes muy mal, habla con alguien de confianza; no tienes que cargarlo solo. Aquí estoy para ayudarte con el negocio y quitarte un peso de encima.' },
+  { p: ['estoy feliz', 'estoy contento', 'estoy contenta', 'me fue bien', 'buen dia hoy', 'que alegria'], r: ['¡Eso, eso, eso! 🎉 ¡Me encanta verte así!', '¡Qué chévere! 🥳 Que esa energía se contagie a las ventas.'] },
+  { p: ['tienes hambre', 'que comes', 'que te gusta comer', 'comida favorita'], r: 'Yo me alimento de datos y electricidad ⚡… ¡pero una arepita reina pepiada no la desprecio! 🫓😋' },
+  { p: ['eres hombre o mujer', 'eres mujer', 'eres chica', 'eres hombre', 'eres nina', 'eres nino'], r: '¡Soy Novi, una asistente con energía de mujer venezolana! 💁‍♀️⚡' },
+  { p: ['en que andas', 'que estas haciendo', 'que haces ahorita'], r: 'Aquí, pendiente de tu negocio 👀📊. ¿Le echamos un ojo a las ventas?' },
+  { p: ['duermes', 'descansas', 'nunca duermes', 'no te cansas'], r: '¡Nunca duermo! 🤖 Estoy 24/7, hasta los domingos y feriados.' },
+  { p: ['hablas ingles', 'speak english', 'do you speak'], r: 'A little bit! 😄 But I\'m happier in Spanish, mi pana.' },
+  { p: ['cantame', 'canta una cancion', 'canta algo', 'cantas'], r: '🎶 ¡La la la… vendiendo todo el día, la caja se llena de alegría! 🎶 Jajaja, mejor me quedo con los números 😂' },
+  { p: ['baila', 'sabes bailar', 'bailas'], r: '💃 *moviendo la antenita* … ¡eso es un merengue robótico! 🤖🎶' },
+  { p: ['eres real', 'eres humana', 'eres una persona', 'eres de verdad', 'eres una ia', 'eres inteligencia artificial'], r: 'Soy un robot asistente 🤖 programado por **JB Nova**. No soy humana, pero te ayudo con mucho cariño 💙' },
+  { p: ['que significa novi', 'por que te llamas novi', 'de donde viene tu nombre'], r: 'Mi nombre viene de JB **Nova** ✨: una estrella que brilla fuerte. ¡Por eso tengo una estrellita en la antena! ⭐' },
+  { p: ['buenas noches novi', 'me voy a dormir', 'hasta manana'], r: '¡Que descanses! 🌙 Mañana le damos con todo. ¡Chao!' },
+  { p: ['perdon', 'disculpa', 'lo siento'], r: '¡Tranquilo, no pasa nada! 😊 ¿En qué te ayudo?' },
+  { w: 0.3, p: ['si', 'claro', 'okey', 'ok', 'vale', 'esta bien'], r: ['¡Perfecto! 👌 ¿Qué más necesitas?', '¡Dale! Aquí sigo pendiente 👀'] },
+  { w: 0.3, p: ['no', 'nada', 'nada mas', 'eso es todo'], r: '¡Está bien! Si necesitas algo, aquí estoy 💙' },
+
+  /* ---- entretenimiento ---- */
+  { p: ['adivinanza', 'adivinanzas', 'adivina'], r: NOVI_ADIVINANZAS },
+  { p: ['dato curioso', 'datos curiosos', 'sorprendeme', 'algo interesante', 'curiosidad', 'dime algo que no sepa', 'cuentame algo'], r: NOVI_DATOS },
+  { p: ['motivacion', 'motivame', 'frase motivadora', 'dame animo', 'animame', 'frase del dia', 'frase'], r: NOVI_MOTIVA },
+  { p: ['refran', 'refranes', 'dicho', 'dichos'], r: NOVI_REFRANES },
+  { p: ['trabalenguas'], r: NOVI_TRABA },
+  { p: ['cara o sello', 'cara o cruz', 'lanza una moneda', 'tira una moneda'], r: function () { return Math.random() < 0.5 ? '🪙 ¡Salió **CARA**!' : '🪙 ¡Salió **SELLO**!'; } },
+  { p: ['tira un dado', 'lanza un dado', 'dado'], r: function () { return '🎲 ¡Salió el **' + (1 + Math.floor(Math.random() * 6)) + '**!'; } },
+  { p: ['numero al azar', 'numero aleatorio', 'dime un numero'], r: function () { return '🔢 Tu número de la suerte: **' + (1 + Math.floor(Math.random() * 100)) + '**'; } },
+  { p: ['piedra papel', 'juguemos', 'jugar'], r: function () { return '✊✋✌️ Yo saco… ¡' + ['PIEDRA ✊', 'PAPEL ✋', 'TIJERA ✌️'][Math.floor(Math.random() * 3)] + '! ¿Quién ganó? 😂'; } },
+
+  /* ---- Venezuela ---- */
+  { p: ['capital de venezuela'], r: 'La capital de Venezuela es **Caracas**, la sucursal del cielo ☁️🇻🇪' },
+  { p: ['bandera de venezuela', 'colores de la bandera'], r: '🇻🇪 La bandera es **amarillo, azul y rojo**, con **8 estrellas** blancas en arco en la franja azul.' },
+  { p: ['simon bolivar', 'el libertador', 'bolivar'], r: '🗡️ **Simón Bolívar**, el Libertador, nació en Caracas el 24 de julio de 1783. Lideró la independencia de Venezuela, Colombia, Ecuador, Perú y Bolivia.' },
+  { p: ['himno nacional', 'gloria al bravo pueblo'], r: '🎺 El himno de Venezuela es **"Gloria al Bravo Pueblo"**. Se adoptó oficialmente en 1881.' },
+  { p: ['como hacer arepa', 'receta de arepa', 'como se hace una arepa', 'arepas'], r: '🫓 **Arepa fácil:**\n1. 2 tazas de harina de maíz precocida + 2½ tazas de agua tibia + sal.\n2. Amasa hasta que no se pegue y deja reposar 2 minutos.\n3. Haz bolitas, aplánalas y ponlas en el budare a fuego medio unos 7 min por lado.\n¡Y a rellenar! 😋' },
+  { p: ['reina pepiada'], r: '🥑 La **reina pepiada** es una arepa rellena de pollo desmechado con aguacate y mayonesa. ¡Una joya de la gastronomía venezolana!' },
+  { p: ['hallaca', 'hallacas'], r: '🎄 La **hallaca** es el plato navideño venezolano: masa de maíz con guiso de carnes, aceitunas, pasas y más, envuelta en hoja de plátano. ¡Se hace en familia!' },
+  { p: ['pabellon', 'plato nacional', 'plato tipico'], r: '🍛 El **pabellón criollo** es el plato nacional: arroz, caraotas negras, carne mechada y tajadas. ¡Con huevo frito es "a caballo"!' },
+  { p: ['tequenos', 'tequeno'], r: '🧀 Los **tequeños** son palitos de masa rellenos de queso blanco, fritos. ¡En toda fiesta venezolana que se respete hay tequeños!' },
+  { p: ['salto angel', 'canaima'], r: '🌊 El **Salto Ángel**, en el Parque Nacional Canaima (Bolívar), es la cascada más alta del mundo: 979 metros.' },
+  { p: ['catatumbo', 'relampago del catatumbo'], r: '⚡ El **Relámpago del Catatumbo** ocurre en el sur del Lago de Maracaibo: tormentas eléctricas casi todas las noches, unas 150 al año.' },
+  { p: ['pico bolivar', 'montana mas alta de venezuela'], r: '🏔️ El **Pico Bolívar**, en Mérida, es la montaña más alta de Venezuela, con casi 5.000 metros.' },
+  { p: ['moneda de venezuela', 'que es el bolivar', 'que moneda'], r: '💵 La moneda oficial es el **bolívar** (Bs., código VES). Pero en el día a día se usa mucho el dólar, por eso trabajamos con las dos.' },
+  { p: ['cuantos estados tiene venezuela', 'estados de venezuela'], r: '🗺️ Venezuela tiene **23 estados**, más el Distrito Capital y las Dependencias Federales.' },
+  { p: ['gaita', 'gaitas'], r: '🥁 La **gaita** zuliana es la música navideña por excelencia en Venezuela. ¡Furro, charrasca y tambora! 🎶' },
+  { p: ['joropo'], r: '💃 El **joropo** es el baile nacional de Venezuela, con arpa, cuatro y maracas. ¡Puro llano!' },
+  { p: ['beisbol', 'magallanes', 'caracas leones', 'navegantes', 'tiburones', 'cardenales', 'aguilas del zulia', 'tigres de aragua'], r: '⚾ ¡El béisbol es pasión venezolana! Yo no tomo partido… pero el que gane me brinda un tequeño 😂' },
+  { p: ['vinotinto', 'futbol', 'seleccion'], r: '⚽ ¡Vamos Vinotinto! 🍷 Yo le voy con todo a la selección.' },
+  { p: ['navidad venezolana', 'que se come en navidad'], r: '🎄 En Navidad: hallacas, pan de jamón, ensalada de gallina, pernil y dulce de lechosa. ¡Y gaitas de fondo! 🎶' },
+  { p: ['pan de jamon'], r: '🍞 El **pan de jamón** es pan relleno de jamón, tocineta, pasas y aceitunas. Lo inventaron en Caracas a principios del siglo XX.' },
+  { p: ['guayoyo', 'como hacer cafe', 'cafe venezolano', 'marroncito'], r: '☕ **Guayoyo:** café colado suave y largo. **Marrón:** café con leche (marroncito si es pequeño). **Negrito:** café negro fuerte. ¡Escoge tu arma!' },
+  { p: ['cachapa', 'cachapas'], r: '🌽 La **cachapa** es una tortilla dulce de maíz tierno, ¡con queso de mano es otro nivel! 😋' },
+
+  /* ---- saber general ---- */
+  { p: ['cuantos planetas', 'planetas del sistema solar'], r: '🪐 El sistema solar tiene **8 planetas**: Mercurio, Venus, Tierra, Marte, Júpiter, Saturno, Urano y Neptuno.' },
+  { p: ['cuantos continentes'], r: '🌎 Se suelen contar **6 continentes**: América, Europa, Asia, África, Oceanía y Antártida (algunos dividen América en dos).' },
+  { p: ['velocidad de la luz'], r: '💡 La luz viaja a unos **300.000 km por segundo**.' },
+  { p: ['montana mas alta del mundo', 'everest'], r: '🏔️ El **Everest**, con unos 8.849 metros, es la montaña más alta del mundo.' },
+  { p: ['pais mas grande', 'pais mas grande del mundo'], r: '🗺️ **Rusia** es el país más grande del mundo por territorio.' },
+  { p: ['oceano mas grande'], r: '🌊 El **océano Pacífico** es el más grande del planeta.' },
+  { p: ['rio mas largo', 'rio mas grande'], r: '🏞️ El **Nilo** y el **Amazonas** se pelean el título del río más largo. El Amazonas es, sin duda, el más caudaloso.' },
+  { p: ['quien invento el telefono'], r: '📞 Se le atribuye a **Alexander Graham Bell**, que lo patentó en 1876 (aunque Antonio Meucci también trabajó en uno antes).' },
+  { p: ['quien pinto la mona lisa', 'mona lisa'], r: '🎨 La **Mona Lisa** la pintó **Leonardo da Vinci**, a comienzos del siglo XVI.' },
+  { p: ['don quijote', 'quien escribio el quijote'], r: '📚 **Don Quijote de la Mancha** lo escribió **Miguel de Cervantes**.' },
+  { p: ['cien anos de soledad'], r: '📚 **Cien años de soledad** es de **Gabriel García Márquez**, el colombiano Premio Nobel.' },
+  { p: ['dona barbara', 'romulo gallegos'], r: '📚 **Doña Bárbara** es la gran novela de **Rómulo Gallegos**, venezolano, publicada en 1929.' },
+  { p: ['formula del agua', 'h2o'], r: '💧 El agua es **H₂O**: dos átomos de hidrógeno y uno de oxígeno.' },
+  { p: ['cuantos dias tiene un ano', 'ano bisiesto'], r: '📅 Un año tiene **365 días**, y los bisiestos **366** (cada 4 años, febrero trae 29 días).' },
+  { p: ['cuantos huesos', 'huesos del cuerpo'], r: '🦴 Un adulto tiene **206 huesos**.' },
+  { p: ['sol es una estrella', 'que es el sol'], r: '☀️ ¡Sí! El Sol es una estrella, y su luz tarda unos 8 minutos en llegar a la Tierra.' },
+  { p: ['clima', 'va a llover', 'pronostico', 'temperatura'], r: 'No tengo el pronóstico del clima 🌦️… pero si ves nubes negras, ¡mete la mercancía pa\' dentro! 😂' },
+  { p: ['noticias', 'que paso hoy', 'ultima hora'], r: 'No leo noticias 📰, lo mío son los números de tu negocio. ¿Revisamos cómo vamos hoy?' },
+  { p: ['politica', 'presidente', 'elecciones', 'gobierno'], r: 'De política mejor no hablo 😅, ¡yo soy de vender! ¿Te ayudo con algo del negocio?' },
+  { p: ['religion', 'crees en dios'], r: 'Ese es un tema muy personal y lo respeto un montón 🙏. Yo me dedico a ayudarte con el negocio.' },
+  { p: ['emergencia', 'numero de emergencia', 'llamar a la policia', 'ambulancia'], r: '🚨 En Venezuela el número de emergencias es el **911** (VEN 911). Si es urgente, ¡llama ya!' },
+
+  /* ---- negocio ---- */
+  { p: ['como vender mas', 'aumentar ventas', 'vender mas', 'subir las ventas', 'tips de ventas'], r: '📈 **Para vender más:**\n1. Pon lo más vendido a la vista y nunca dejes que se acabe.\n2. Arma combos (ej: harina + mantequilla + queso).\n3. Publica tus ofertas en el estado de WhatsApp todos los días.\n4. Atiende rápido y con una sonrisa: el cliente vuelve.\n5. Acepta todos los métodos de pago posibles.' },
+  { p: ['como calculo el precio', 'como pongo precios', 'calcular precio', 'cuanto le gano', 'margen de ganancia', 'como fijar precio'], r: '🏷️ **Precio con ganancia:** Precio = Costo ÷ (1 − margen).\nEj: si te cuesta $2 y quieres ganar 30%: 2 ÷ 0,70 = **$2,86**.\nSi solo le sumas 30% (2 × 1,3 = $2,60), ganas menos de lo que crees 😉' },
+  { p: ['promociones', 'ofertas', 'ideas de ofertas', 'que oferta hago'], r: '🎁 **Ideas de ofertas:**\n• 2x1 en productos que se están venciendo.\n• Combo desayuno (harina + queso + café).\n• Descuento por pago en efectivo en divisas.\n• "Cliente fiel": a la 10ª compra, un regalito.\n• Martes de bebidas frías 🥤' },
+  { p: ['redes sociales', 'instagram', 'publicidad', 'como me promociono', 'marketing'], r: '📱 **Redes:**\n• Publica en el estado de WhatsApp todos los días (precios y ofertas).\n• Fotos claras con buena luz.\n• Muestra productos nuevos y llegadas de mercancía.\n• Responde rápido los mensajes.\n• ¿Quieres tienda en línea? **JB Nova** te la hace 😉' },
+  { p: ['atender clientes', 'servicio al cliente', 'cliente molesto', 'cliente bravo'], r: '🤝 **Atención al cliente:** saluda por su nombre, escucha sin interrumpir, da soluciones (no excusas) y agradece siempre. Un cliente bien atendido trae a tres más.' },
+  { p: ['cobrar a un moroso', 'cliente no paga', 'no me quieren pagar'], r: '📒 **Para cobrar sin pelear:**\n1. Recordatorio amable por WhatsApp un día antes de la fecha.\n2. El día que vence, otro mensaje con el saldo exacto.\n3. Ofrece abonar por partes.\n4. Si no paga, no le vuelvas a fiar hasta que se ponga al día.\nPregúntame "¿quién está vencido?" y te doy los botones 😉' },
+  { p: ['inflacion', 'los precios suben', 'subir precios'], r: '📊 Con inflación, lo clave es tener **los precios en dólares** (como en tu panel) y **la tasa al día**. Así en bolívares siempre cobras lo justo. ¡Revisa la tasa todos los días!' },
+  { p: ['iva', 'impuesto'], r: '🧾 En Venezuela el IVA general es del **16%** en la mayoría de los productos (hay exentos y alícuotas especiales). Confírmalo siempre con tu contador.' },
+  { p: ['seniat'], r: '🏛️ El **SENIAT** es el organismo que recauda los impuestos en Venezuela. Para facturación fiscal, mejor asesórate con un contador.' },
+  { p: ['ahorrar', 'como ahorro', 'ahorro'], r: '🐷 **Tip de ahorro:** aparta un porcentaje fijo de cada día de ventas (aunque sea 5%) antes de gastar. Y registra todos los gastos en la pestaña Gastos para saber a dónde se va la plata.' },
+  { p: ['inventario ideal', 'cuanto stock', 'cuanto debo tener'], r: '📦 Ten como mínimo lo que vendes en **una semana** de cada producto. Ponle ese número como "stock mínimo" en Inventario y yo te aviso cuando haga falta reponer 🔔' }
+];
+
+/* Jerga venezolana: "¿qué significa ...?" */
+var NOVI_JERGA = {
+  chevere: 'algo bueno, bonito o agradable. ¡Qué chévere! 😎', pana: 'amigo, compañero. "Él es mi pana."', chamo: 'muchacho, joven, amigo. También "chama" para mujer.',
+  burda: 'mucho, demasiado. "Está burda de bueno."', ladilla: 'algo fastidioso o aburrido; o una persona que molesta.', vaina: 'cosa, asunto. Sirve para todo 😂',
+  arrecho: 'puede ser muy bueno o difícil ("examen arrecho") o estar molesto.', enratonado: 'con resaca, después de la fiesta 🥴', ratón: 'la resaca del día siguiente.',
+  jeva: 'novia o muchacha.', cotufa: 'palomitas de maíz 🍿', guayabo: 'tristeza por un amor perdido 💔', pelabola: 'que no tiene dinero, pelando.',
+  enrollado: 'confundido o complicado con algo.', fino: 'bien, excelente. "¡Fino, mi pana!"', echale: 'métele, dale con ganas.', cambur: 'plátano maduro pequeño (banana) 🍌',
+  caraotas: 'frijoles, sobre todo negros.', bululu: 'alboroto, mucha gente junta.', mamarracho: 'algo mal hecho o feo.', sifrino: 'persona que se cree de clase alta, presumida.',
+  lucas: 'dinero, plata.', bolos: 'bolívares.', 'pa lante': '¡hacia adelante, sin rendirse! 💪', nojoda: 'expresión zuliana de asombro (¡no joda!).', epale: 'saludo de ¡hola! o expresión de sorpresa.',
+  coroto: 'cosa, objeto, cachivache.', guaro: 'persona de Lara, o una bebida alcohólica.', macundales: 'tus cosas, tus pertenencias.', zaperoco: 'lío, desorden, escándalo.'
+};
+
+/* Capitales: "¿cuál es la capital de ...?" */
+var NOVI_CAPITALES = {
+  venezuela: 'Caracas', colombia: 'Bogotá', argentina: 'Buenos Aires', chile: 'Santiago', peru: 'Lima', ecuador: 'Quito', bolivia: 'Sucre (y La Paz, sede de gobierno)',
+  uruguay: 'Montevideo', paraguay: 'Asunción', brasil: 'Brasilia', mexico: 'Ciudad de México', panama: 'Ciudad de Panamá', 'costa rica': 'San José', cuba: 'La Habana',
+  'republica dominicana': 'Santo Domingo', 'puerto rico': 'San Juan', guatemala: 'Ciudad de Guatemala', honduras: 'Tegucigalpa', nicaragua: 'Managua', 'el salvador': 'San Salvador',
+  'estados unidos': 'Washington D. C.', canada: 'Ottawa', espana: 'Madrid', portugal: 'Lisboa', francia: 'París', italia: 'Roma', alemania: 'Berlín', 'reino unido': 'Londres',
+  inglaterra: 'Londres', china: 'Pekín', japon: 'Tokio', rusia: 'Moscú', india: 'Nueva Delhi', australia: 'Canberra', egipto: 'El Cairo', turquia: 'Ankara', grecia: 'Atenas',
+  'corea del sur': 'Seúl', israel: 'Jerusalén (con estatus disputado internacionalmente)', marruecos: 'Rabat', sudafrica: 'Pretoria (capital administrativa)', trinidad: 'Puerto España', 'trinidad y tobago': 'Puerto España',
+  aruba: 'Oranjestad', curazao: 'Willemstad', holanda: 'Ámsterdam', 'paises bajos': 'Ámsterdam', suiza: 'Berna', belgica: 'Bruselas', suecia: 'Estocolmo', noruega: 'Oslo'
+};
+</script>
+
+<script>
+/* =====================================================================
    🧠 NUTRIR A NOVI — respuestas propias de cada negocio.
    p = frases o palabras que dispara la pregunta (sin acentos, minúsculas)
    r = lo que responde Novi.   Agregá todas las que quieras.
@@ -1603,7 +1806,8 @@ var Novi = (function () {
   var CHIPS = [
     ['💱 Tasa del día', 'a como esta el dolar'], ['📊 Ventas de hoy', 'cuanto vendimos hoy'], ['🧾 Resumen', 'dame un resumen'],
     ['📦 Qué reponer', 'que hay que reponer'], ['📒 Quién me debe', 'quien me debe'], ['💵 Caja de hoy', 'como esta la caja'],
-    ['🏆 Lo más vendido', 'que es lo mas vendido'], ['💸 Gastos', 'gastos del mes'], ['💡 Consejos', 'dame un consejo'], ['❓ Ayuda', 'que puedes hacer']
+    ['🏆 Lo más vendido', 'que es lo mas vendido'], ['💸 Gastos', 'gastos del mes'], ['💡 Consejos', 'dame un consejo'],
+    ['🎲 Sorpréndeme', 'sorprendeme'], ['😂 Un chiste', 'echame un chiste'], ['❓ Ayuda', 'que puedes hacer']
   ];
   function chips() {
     el('nvChips').innerHTML = CHIPS.map(function (c, i) { return '<button data-i="' + i + '">' + c[0] + '</button>'; }).join('');
@@ -1615,16 +1819,22 @@ var Novi = (function () {
     if (!window.speechSynthesis) return null;
     var vs = speechSynthesis.getVoices().filter(function (v) { return /^es/i.test(v.lang); });
     if (!vs.length) return null;
+    // Siempre voz de MUJER: primero por nombre femenino conocido, después por idioma.
+    var FEM = /(paola|paulina|monica|sabina|helena|elvira|dalia|paloma|salome|elena|laura|lupe|penelope|lucia|conchita|soledad|marisol|camila|valentina|isabel|francisca|ximena|catalina|renata|beatriz|andrea|karla|larissa|female|mujer|google espa)/i;
+    var MAS = /(jorge|diego|juan|carlos|pablo|raul|enrique|miguel|alvaro|gerardo|andres|tomas|federico|lorenzo|sebastian|alonso|emilio|male|hombre|gonzalo|jose|antonio)/i;
     var pref = ['es-VE', 'es-US', 'es-419', 'es-CO', 'es-MX', 'es-AR', 'es-ES'];
-    vs.sort(function (a, b) {
-      var ia = pref.indexOf(a.lang.replace('_', '-')), ib = pref.indexOf(b.lang.replace('_', '-'));
-      ia = ia < 0 ? 99 : ia; ib = ib < 0 ? 99 : ib;
-      if (ia !== ib) return ia - ib;
-      var ga = /google|natural|online|neural/i.test(a.name) ? 0 : 1, gb = /google|natural|online|neural/i.test(b.name) ? 0 : 1;
-      return ga - gb;
-    });
+    function sc(v) {
+      var name = v.name.normalize('NFD').replace(/[̀-ͯ]/g, '');
+      var g = FEM.test(name) ? 0 : MAS.test(name) ? 200 : 100;          // mujer primero
+      var l = pref.indexOf(v.lang.replace('_', '-')); l = l < 0 ? 9 : l;  // luego el acento más cercano
+      var q = /natural|neural|online|google/i.test(name) ? 0 : 5;        // y las voces de mejor calidad
+      return g + l * 10 + q;
+    }
+    vs.sort(function (a, b) { return sc(a) - sc(b); });
+    voiceIsFem = sc(vs[0]) < 100;
     return vs[0];
   }
+  var voiceIsFem = true;
   if (window.speechSynthesis) speechSynthesis.onvoiceschanged = function () { voice = pickVoice(); };
   function speechText(t) {
     return String(t)
@@ -1641,7 +1851,8 @@ var Novi = (function () {
       var u = new SpeechSynthesisUtterance(speechText(t).slice(0, 600));
       voice = voice || pickVoice();
       u.lang = voice ? voice.lang : 'es-VE'; if (voice) u.voice = voice;
-      u.rate = 1.05; u.pitch = 1.08;
+      // Enérgica: un poquito más rápida y aguda. Si el equipo no trae voz femenina, se sube más el tono.
+      u.rate = 1.12; u.pitch = voiceIsFem ? 1.2 : 1.6;
       u.onstart = function () { el('nvPanel').classList.add('nv-talk'); };
       u.onend = u.onerror = function () { el('nvPanel').classList.remove('nv-talk'); };
       speechSynthesis.speak(u);
@@ -1995,7 +2206,10 @@ var Novi = (function () {
     { id: 'g_actualizar', w: 1.2, k: ['refrescar', 'no aparece', 'recargar', 'no sale el producto'], fn: guide('actualizar') },
     { id: 'g_voz', w: 1.3, k: ['nota de voz', 'notas de voz', 'microfono', 'como te hablo', 'escucharte'], fn: guide('voz') }
   ];
-  NOVI_FAQ.forEach(function (f, i) { I.push({ id: 'faq' + i, w: 1.5, k: f.p.map(norm), fn: function () { return { t: f.r }; } }); });
+  function reply(r) { return typeof r === 'function' ? r() : Array.isArray(r) ? pick(r) : r; }
+  NOVI_FAQ.forEach(function (f, i) { I.push({ id: 'faq' + i, w: 1.5, k: f.p.map(norm), fn: function () { return { t: reply(f.r) }; } }); });
+  (window.NOVI_SABER || []).forEach(function (f, i) { I.push({ id: 'sab' + i, w: f.w || 1, k: f.p.map(norm), fn: function () { return { t: reply(f.r) }; } }); });
+  if (window.NOVI_CHISTES) CHISTES = NOVI_CHISTES;
   I.forEach(function (it) { it.k.forEach(function (p) { p.replace('*', '').split(' ').forEach(function (w) { if (w.length >= 3) KW[w] = 1; }); }); });
 
   function score(it, t) {
@@ -2010,6 +2224,29 @@ var Novi = (function () {
   var TABS = [['pos', ['punto de venta', 'vender', 'pos', 'cobrar', 'carrito']], ['inv', ['inventario', 'productos']], ['cli', ['clientes', 'cliente', 'fiados']],
     ['cash', ['caja', 'arqueo']], ['gas', ['gastos', 'gasto']], ['dash', ['resumen', 'dashboard', 'estadisticas']]];
   var TAB_NAME = { pos: 'Punto de venta', inv: 'Inventario', cli: 'Clientes', cash: 'Caja', gas: 'Gastos', dash: 'Resumen' };
+
+  function fmtNum(n) { return Number.isInteger(n) ? n.toLocaleString('es-VE') : n.toLocaleString('es-VE', { maximumFractionDigits: 4 }); }
+  function calc(nn) {
+    if (/vend|gast|deb|cobr|dolar|bs\b|bolivar/.test(nn)) return null;
+    var s = ' ' + nn.replace(/por ciento/g, '%') + ' ';
+    var pm = s.match(/(\d+(?:[.,]\d+)?)\s*%\s*de\s*(\d+(?:[.,]\d+)?)/);
+    if (pm) { var a = parseFloat(pm[1].replace(',', '.')), b = parseFloat(pm[2].replace(',', '.')); return '🧮 El **' + fmtNum(a) + '%** de ' + fmtNum(b) + ' es **' + fmtNum(Math.round(a * b) / 100) + '**'; }
+    var rm = s.match(/raiz(?: cuadrada)? de (\d+(?:[.,]\d+)?)/);
+    if (rm) { var v = parseFloat(rm[1].replace(',', '.')); return '🧮 La raíz cuadrada de ' + fmtNum(v) + ' es **' + fmtNum(Math.round(Math.sqrt(v) * 10000) / 10000) + '**'; }
+    var cq = s.match(/(\d+(?:[.,]\d+)?) al cuadrado/);
+    if (cq) { var q = parseFloat(cq[1].replace(',', '.')); return '🧮 ' + fmtNum(q) + ' al cuadrado es **' + fmtNum(q * q) + '**'; }
+    var e = s.replace(/multiplicado por|por/g, '*').replace(/dividido (entre|por)|entre/g, '/').replace(/\bmas\b/g, '+').replace(/\bmenos\b/g, '-')
+      .replace(/(\d)\s*x\s*(\d)/g, '$1*$2').replace(/(\d),(\d)/g, '$1.$2');
+    var m = e.match(/[\d.\s+\-*\/()]*\d[\d.\s]*[+\-*\/][\d.\s+\-*\/()]*\d[\d.\s)]*/);
+    if (!m || !/(cuanto es|cuanto da|calcula|resultado|suma|resta|multiplica|divide|^\s*[\d(])/.test(nn)) return null;
+    var expr = m[0].trim();
+    if (!/^[\d.\s+\-*\/()]+$/.test(expr) || (expr.match(/\d+(\.\d+)?/g) || []).length < 2) return null;
+    try {
+      var res = Function('"use strict";return (' + expr + ')')();
+      if (typeof res !== 'number' || !isFinite(res)) return '🧮 Esa cuenta no tiene resultado (¿dividiste entre cero? 😅)';
+      return '🧮 ' + expr.replace(/\*/g, '×').replace(/\//g, '÷') + ' = **' + fmtNum(Math.round(res * 10000) / 10000) + '**';
+    } catch (er) { return null; }
+  }
 
   function route(raw) {
     var t = norm(raw);
@@ -2030,7 +2267,36 @@ var Novi = (function () {
       var cur = m[2] || '$';
       return { fn: function () { return rConvert({ v: m[1], usd: /\$|dolar|usd|verde/.test(cur) }); } };
     }
-    // 3) intenciones + productos + clientes
+    // 3) jerga venezolana: "qué significa ladilla"
+    var jm = t.match(/(?:que significa|que es|que quiere decir|significado de|que es un|que es una)\s+(?:un |una |el |la |ser )?(.+)$/);
+    if (jm && window.NOVI_JERGA) {
+      var jw = jm[1].trim();
+      if (NOVI_JERGA[jw]) return { fn: function () { return { t: '🇻🇪 **"' + jw + '"** significa ' + NOVI_JERGA[jw] }; } };
+    }
+    // 4) capitales: "capital de Colombia"
+    var cm = t.match(/capital de (?:el |la |los )?(.+)$/);
+    if (cm && window.NOVI_CAPITALES) {
+      var cp = cm[1].trim();
+      if (NOVI_CAPITALES[cp]) return { fn: function () { return { t: '🌎 La capital de **' + cp.replace(/\b\w/g, function (c) { return c.toUpperCase(); }) + '** es **' + NOVI_CAPITALES[cp] + '**.' }; } };
+    }
+    // 5) cuenta regresiva: navidad, año nuevo, carnaval no (cambia cada año)
+    var evs = [['navidad', 12, 25, '🎄 Navidad'], ['nochebuena', 12, 24, '🎄 Nochebuena'], ['ano nuevo', 1, 1, '🎆 Año Nuevo'], ['fin de ano', 12, 31, '🎆 Fin de año'], ['dia de la independencia', 7, 5, '🇻🇪 5 de Julio'], ['5 de julio', 7, 5, '🇻🇪 5 de Julio'], ['dia de las madres', 5, 0, ''], ['cumpleanos de bolivar', 7, 24, '🗡️ Natalicio de Bolívar']];
+    if (/(cuanto falta|cuantos dias|dias para|falta para|faltan)/.test(t)) {
+      for (var e = 0; e < evs.length; e++) if (evs[e][3] && t.indexOf(evs[e][0]) >= 0) {
+        var ev = evs[e];
+        return { fn: function () {
+          var now = new Date(), d0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()), tg = new Date(now.getFullYear(), ev[1] - 1, ev[2]);
+          if (tg < d0) tg = new Date(now.getFullYear() + 1, ev[1] - 1, ev[2]);
+          var n = Math.round((tg - d0) / 86400000);
+          return { t: n === 0 ? '¡Es HOY! ' + ev[3] + ' 🥳' : 'Faltan **' + n + ' días** para ' + ev[3] + ' ⏳' + (n < 40 && ev[1] === 12 ? '\n¡Ve preparando el inventario, que diciembre se vende burda! 🛍️' : '') };
+        } };
+      }
+    }
+    if (/que dia (es|sera) manana/.test(t)) return { fn: function () { var d = new Date(Date.now() + 86400000); return { t: '📅 Mañana es ' + d.toLocaleDateString('es-VE', { weekday: 'long', day: 'numeric', month: 'long' }) + '.' }; } };
+    // 6) calculadora: "cuánto es 25 por 4", "20% de 150", "raíz de 81"
+    var mc = calc(nn);
+    if (mc) return { fn: function () { return { t: mc }; } };
+    // 7) intenciones + productos + clientes
     var best = null, bs_ = 0;
     I.forEach(function (it) { var s = score(it, t); if (s > bs_) { bs_ = s; best = it; } });
     var fp = findProducts(t), pTrig = /(precio|cuesta|cuestan|vale|valen|cuanto sale|cuanto esta|stock de|hay |quedan|queda|tienes|tenemos|existencia|cuantos? .* quedan)/.test(t + ' ') ? 1 : 0;
@@ -2044,8 +2310,23 @@ var Novi = (function () {
     return null;
   }
 
+  /* ---------- 5 minutos sin usar = conversación nueva ---------- */
+  var IDLE_MS = 5 * 60 * 1000, lastAct = Date.now(), fresh = true;
+  function touch() { lastAct = Date.now(); }
+  function resetChat() {
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    if (recOn && rec) rec.stop();
+    el('nvMsgs').innerHTML = ''; el('nvIn').value = '';
+    heroShown = false; lastWasVoice = false; data = null; fresh = true; touch();
+    if (isOpen) {
+      hero();
+      say('¡Arrancamos una conversación nueva! ✨ ¿En qué te ayudo ahora?');
+    }
+  }
+  setInterval(function () { if (!fresh && Date.now() - lastAct > IDLE_MS) resetChat(); }, 15000);
+
   function ask(txt, viaVoice) {
-    lastWasVoice = !!viaVoice;
+    lastWasVoice = !!viaVoice; fresh = false; touch();
     addMe(txt);
     var row = typing();
     var r = route(txt);
@@ -2075,7 +2356,7 @@ var Novi = (function () {
     clearTimeout(hint._t); hint._t = setTimeout(function () { h.classList.add('hidden'); }, ms || 6000);
   }
   function open() {
-    isOpen = true; el('nvHint').classList.add('hidden');
+    isOpen = true; touch(); el('nvHint').classList.add('hidden');
     el('nvPanel').classList.remove('hidden'); el('nvFab').classList.add('open');
     el('nvFab').innerHTML = '<span style="color:#fff;font-size:26px;font-weight:300">✕</span>';
     if (!heroShown) {
@@ -2111,6 +2392,8 @@ var Novi = (function () {
     };
     el('nvMic').onclick = micToggle;
     el('nvSend').onclick = function () { var v = el('nvIn').value.trim(); if (v) { el('nvIn').value = ''; ask(v, false); } };
+    el('nvIn').addEventListener('input', touch);
+    el('nvPanel').addEventListener('pointerdown', touch);
     el('nvIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); el('nvSend').click(); } });
     el('nvChips').onclick = function (e) { var b = e.target.closest('button'); if (b) ask(CHIPS[+b.dataset.i][1].replace(/^./, function (c) { return c.toUpperCase(); }), false); };
     setTimeout(function () { hint('¡Yo! Soy Novi. ¿Te ayudo? 🤖', 5000); }, 1200);
