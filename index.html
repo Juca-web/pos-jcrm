@@ -1583,7 +1583,7 @@ var NOVI_TRABA = [
 
 var NOVI_SABER = [
   /* ---- charla ---- */
-  { p: ['como estas', 'como te va', 'como andas', 'todo bien', 'que mas', 'como amaneciste', 'como sigues'], r: ['¡Full energía, mi pana! ⚡ Lista para lo que necesites. ¿Y tú qué tal?', '¡Burda de bien! 😄 Aquí pendiente de tu negocio. ¿Cómo va todo por allá?', '¡Excelente! Con las pilas recargadas 🔋. ¿En qué te ayudo?'] },
+  { p: ['como estas', 'como te va', 'como andas', 'todo bien', 'que mas', 'como amaneciste', 'como sigues'], r: ['¡Muy bien, gracias! ⚡ Lista para lo que necesites. ¿En qué te puedo ayudar?', '¡Burda de bien! 😄 Aquí pendiente de tu negocio. ¿Cómo va todo por allá?', '¡Excelente! Con las pilas recargadas 🔋. ¿En qué te ayudo?'] },
   { p: ['bien y tu', 'todo bien y tu', 'muy bien y tu', 'bien gracias'], r: ['¡Qué bueno! 🙌 Yo también, a millón. ¿Revisamos cómo van las ventas?', '¡Me alegra! 😁 Yo siempre bien, soy un robot feliz.'] },
   { p: ['cuantos anos tienes', 'tu edad', 'cuando naciste', 'que edad tienes'], r: 'Nací en 2026 en el laboratorio de **JB Nova** 🤖💙. ¡Soy una bebé, pero bien despierta!' },
   { p: ['donde vives', 'de donde eres', 'donde estas'], r: 'Vivo en la nube ☁️ y en tu panel, siempre a un toque. Pero mi corazón es venezolano 🇻🇪' },
@@ -1599,7 +1599,7 @@ var NOVI_SABER = [
   { p: ['eres hombre o mujer', 'eres mujer', 'eres chica', 'eres hombre', 'eres nina', 'eres nino'], r: '¡Soy Novi, una asistente con energía de mujer venezolana! 💁‍♀️⚡' },
   { p: ['en que andas', 'que estas haciendo', 'que haces ahorita'], r: 'Aquí, pendiente de tu negocio 👀📊. ¿Le echamos un ojo a las ventas?' },
   { p: ['duermes', 'descansas', 'nunca duermes', 'no te cansas'], r: '¡Nunca duermo! 🤖 Estoy 24/7, hasta los domingos y feriados.' },
-  { p: ['hablas ingles', 'speak english', 'do you speak'], r: 'A little bit! 😄 But I\'m happier in Spanish, mi pana.' },
+  { p: ['hablas ingles', 'speak english', 'do you speak'], r: 'A little bit! 😄 But I\'m happier in Spanish.' },
   { p: ['cantame', 'canta una cancion', 'canta algo', 'cantas'], r: '🎶 ¡La la la… vendiendo todo el día, la caja se llena de alegría! 🎶 Jajaja, mejor me quedo con los números 😂' },
   { p: ['baila', 'sabes bailar', 'bailas'], r: '💃 *moviendo la antenita* … ¡eso es un merengue robótico! 🤖🎶' },
   { p: ['eres real', 'eres humana', 'eres una persona', 'eres de verdad', 'eres una ia', 'eres inteligencia artificial'], r: 'Soy un robot asistente 🤖 programado por **JB Nova**. No soy humana, pero te ayudo con mucho cariño 💙' },
@@ -1711,6 +1711,10 @@ var NOVI_CAPITALES = {
    p = frases o palabras que dispara la pregunta (sin acentos, minúsculas)
    r = lo que responde Novi.   Agregá todas las que quieras.
    ===================================================================== */
+/* 👤 NOMBRE DE LA PERSONA QUE USA EL PANEL: Novi la saluda así ("¡Hola, Carimar!").
+   Déjalo vacío ('') si no quieres que diga ningún nombre. */
+var NOVI_NOMBRE = 'Carimar';
+
 var NOVI_FAQ = [
   { p: ['horario', 'a que hora abren', 'a que hora cierran', 'hora de abrir'], r: 'Nuestro horario es de lunes a sábado de 8:00 am a 8:00 pm, y los domingos de 9:00 am a 2:00 pm. 🕗' },
   { p: ['direccion', 'donde quedan', 'ubicacion', 'donde estan'], r: 'Estamos en … (poné aquí la dirección de la tienda) 📍' },
@@ -1749,7 +1753,8 @@ var Novi = (function () {
   function today() { return S.today || new Date().toISOString().slice(0, 10); }
   function addDays(key, d) { return addDaysKey(key, d); }
   function ddmm(key) { var p = key.split('-'); return p[2] + '/' + p[1]; }
-  var HI = ['¡Épale!', '¡Mira!', 'Fíjate,', 'Dale,', 'Listo, mi pana.', 'Aquí tienes,', 'Chévere,'];
+  function nom() { return (window.NOVI_NOMBRE || '').trim() ? ', ' + NOVI_NOMBRE.trim() : ''; }
+  var HI = ['¡Claro!', 'Mira,', 'Fíjate,', 'Con gusto.', 'Listo.', 'Aquí tienes,', 'Perfecto,'];
 
   /* ---------- datos del panel ---------- */
   function loadData(force) {
@@ -1878,7 +1883,7 @@ var Novi = (function () {
     };
     rec.onerror = function (e) {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') say('Necesito permiso para usar el micrófono 🎙️. Tocá el candadito de la barra de direcciones y permití el micrófono.');
-      else if (e.error === 'no-speech') say('No te escuché nada, chamo. Probá otra vez hablando un poquito más cerca 🎙️');
+      else if (e.error === 'no-speech') say('No te escuché bien. Probá otra vez hablando un poquito más cerca 🎙️');
     };
     rec.onend = function () {
       recOn = false; el('nvMic').classList.remove('rec'); el('nvWave').classList.remove('on'); el('nvIn').placeholder = 'Pregúntame lo que quieras…';
@@ -2101,7 +2106,7 @@ var Novi = (function () {
     if (tasaInfo && Math.abs(tasaInfo.bcv - S.rate) > 0.009) tips.push('💱 La tasa del panel no es la del BCV de hoy. Actualízala para no perder plata.');
     var noMin = S.products.filter(function (p) { return !p.min; }).length;
     if (noMin) tips.push('🔔 ' + noMin + ' producto(s) no tienen stock mínimo. Pónselo y te aviso cuando se estén acabando.');
-    if (!tips.length) tips.push('Todo se ve en orden 👌. Sigue así, mi pana.');
+    if (!tips.length) tips.push('Todo se ve en orden 👌. ¡Sigue así!');
     return { t: '💡 **Mis consejos de hoy:**\n\n' + tips.slice(0, 4).join('\n\n') };
   }
   function rFecha() {
@@ -2151,9 +2156,9 @@ var Novi = (function () {
      k: frases; terminadas en * = "empieza por". w: peso. need: 'data' si usa la planilla */
   var I = [
     { id: 'saludo', w: 0.5, k: ['hola', 'epale', 'buenas', 'buenos dias', 'buenas tardes', 'buenas noches', 'que tal', 'hey', 'saludos', 'quiubo', 'que hubo', 'que lo que', 'como estas'],
-      fn: function () { var h = new Date().getHours(); return { t: (h < 12 ? '¡Buenos días' : h < 19 ? '¡Buenas tardes' : '¡Buenas noches') + ', mi pana! 👋 ¿En qué te echo una mano?' }; } },
+      fn: function () { var h = new Date().getHours(); return { t: (h < 12 ? '¡Buenos días' : h < 19 ? '¡Buenas tardes' : '¡Buenas noches') + nom() + '! 👋 ¿En qué te puedo ayudar?' }; } },
     { id: 'gracias', w: 0.5, k: ['gracias', 'fino', 'chevere', 'excelente', 'perfecto', 'buenisimo', 'muy amable', 'te pasaste', 'genial'],
-      fn: function () { return { t: pick(['¡A la orden, siempre! 💙', '¡Con gusto, mi pana! 🤖', 'Para eso estoy 😎', '¡Fino! Cualquier cosa me avisas.']) }; } },
+      fn: function () { return { t: pick(['¡A la orden, siempre! 💙', '¡Con gusto! 🤖', 'Para eso estoy 😎', '¡Con gusto! Cualquier cosa me avisas.']) }; } },
     { id: 'chao', w: 0.6, k: ['chao', 'adios', 'nos vemos', 'hasta luego', 'bye', 'me voy'], fn: function () { return { t: '¡Chao, pues! Que se den buenas ventas 🙌' }; } },
     { id: 'quien', k: ['quien eres', 'como te llamas', 'que eres', 'tu nombre', 'quien te creo', 'quien te hizo', 'eres un robot'],
       fn: function () { return { t: '¡Yo! Soy **Novi** 🤖💙, el asistente virtual de **JB Nova**. Me sé tus ventas, inventario, fiados, caja, gastos y la tasa del BCV. Pregúntame escribiendo o con nota de voz.' }; } },
@@ -2320,7 +2325,7 @@ var Novi = (function () {
     heroShown = false; lastWasVoice = false; data = null; fresh = true; touch();
     if (isOpen) {
       hero();
-      say('¡Arrancamos una conversación nueva! ✨ ¿En qué te ayudo ahora?');
+      say('¡Hola' + nom() + '! Arrancamos una conversación nueva ✨ ¿En qué te puedo ayudar?');
     }
   }
   setInterval(function () { if (!fresh && Date.now() - lastAct > IDLE_MS) resetChat(); }, 15000);
@@ -2333,7 +2338,7 @@ var Novi = (function () {
     if (!r) {
       try { var l = JSON.parse(localStorage.getItem('nv_unknown') || '[]'); l.push(txt); localStorage.setItem('nv_unknown', JSON.stringify(l.slice(-50))); } catch (e) {}
       setTimeout(function () {
-        say(pick(['Mmm, esa no me la sé todavía 🤔.', 'Uy, no te capté, chamo 😅.', 'Esa se me escapó 🙈.']) + ' Prueba preguntándome con otras palabras, o toca uno de los botones de abajo 👇');
+        say(pick(['Mmm, esa no me la sé todavía 🤔.', 'Uy, no te entendí 😅.', 'Esa se me escapó 🙈.']) + ' Prueba preguntándome con otras palabras, o toca uno de los botones de abajo 👇');
         row.remove();
       }, 450);
       return;
@@ -2362,7 +2367,7 @@ var Novi = (function () {
     if (!heroShown) {
       hero();
       var h = new Date().getHours();
-      say((h < 12 ? '¡Buenos días' : h < 19 ? '¡Buenas tardes' : '¡Buenas noches') + '! 👋 Pregúntame lo que necesites del negocio: ventas, inventario, fiados, caja, gastos o la tasa. También me puedes mandar **notas de voz** 🎙️');
+      say((h < 12 ? '¡Buenos días' : h < 19 ? '¡Buenas tardes' : '¡Buenas noches') + nom() + '! 👋 Pregúntame lo que necesites del negocio: ventas, inventario, fiados, caja, gastos o la tasa. También me puedes mandar **notas de voz** 🎙️');
     }
     while (pending.length) { var p = pending.shift(); say(p.t, p.a); }
     loadData().catch(function () {});
@@ -2396,7 +2401,7 @@ var Novi = (function () {
     el('nvPanel').addEventListener('pointerdown', touch);
     el('nvIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); el('nvSend').click(); } });
     el('nvChips').onclick = function (e) { var b = e.target.closest('button'); if (b) ask(CHIPS[+b.dataset.i][1].replace(/^./, function (c) { return c.toUpperCase(); }), false); };
-    setTimeout(function () { hint('¡Yo! Soy Novi. ¿Te ayudo? 🤖', 5000); }, 1200);
+    setTimeout(function () { hint('¡Hola' + nom() + '! Soy Novi. ¿Te ayudo? 🤖', 5000); }, 1200);
 
     // Revisión automática de la tasa BCV (una vez por día y por valor)
     loadTasa().then(function (t) {
@@ -2404,7 +2409,7 @@ var Novi = (function () {
       var key = 'nv_tasa_' + today() + '_' + t.bcv;
       try { if (localStorage.getItem(key)) return; localStorage.setItem(key, '1'); } catch (e) {}
       badge(1);
-      setTimeout(function () { hint('¡Épale! Salió la tasa BCV de hoy: ' + fmtRate(t.bcv) + ' 👀', 9000); }, 6500);
+      setTimeout(function () { hint('¡Hola' + nom() + '! Salió la tasa BCV de hoy: ' + fmtRate(t.bcv) + ' 👀', 9000); }, 6500);
       rTasa(true).then(function (res) { if (isOpen) say(res.t, res.a); else pending.push(res); });
     }).catch(function () {});
   }
