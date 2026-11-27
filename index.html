@@ -494,6 +494,7 @@ function init() {
     fillClientList(); initFiadoDefaults();
     $('loader').classList.add('hidden');
     focusScan();
+    if (window.Novi) Novi.boot();   // 🤖 Novi
   }).catch(function (e) {
     $('loader').textContent = 'Error al cargar: ' + e.message;
   });
@@ -1371,5 +1372,763 @@ $('lockBtn').addEventListener('click', function () { var t = S.token; api('logou
   if (t) { S.token = t; $('lockscreen').classList.add('hidden'); $('loader').classList.remove('hidden'); init(); }
 })();
 </script>
+
+<!-- =====================================================================
+     NOVI · Asistente virtual de JB Nova  (pegar justo antes de </body>)
+     ===================================================================== -->
+<style>
+.nv-fab{position:fixed;left:20px;bottom:20px;z-index:45;width:68px;height:68px;border-radius:50%;
+  background:radial-gradient(circle at 50% 35%,#1d3a86 0%,#0b1636 70%);display:grid;place-items:center;
+  box-shadow:0 12px 30px rgba(37,99,235,.45),inset 0 0 0 1px rgba(140,190,255,.28);transition:transform .2s}
+.nv-fab:hover{transform:translateY(-3px) scale(1.04)}
+.nv-fab svg{width:52px;height:52px;filter:drop-shadow(0 0 8px rgba(74,163,255,.75))}
+.nv-fab::before{content:'';position:absolute;inset:-6px;border-radius:50%;border:2px solid rgba(74,163,255,.55);animation:nvRing 2.6s infinite}
+.nv-fab.open::before{display:none}
+.nv-dot{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:#ef4444;color:#fff;font-size:11px;font-weight:800;display:grid;place-items:center;box-shadow:0 0 0 3px #f3f5f9}
+.nv-hint{position:fixed;left:98px;bottom:36px;z-index:45;background:#fff;color:#0b1636;font-weight:800;padding:10px 14px;border-radius:14px;
+  box-shadow:0 10px 30px rgba(20,28,60,.18);animation:nvPop .45s cubic-bezier(.2,1.4,.4,1) both;cursor:pointer;max-width:240px;font-size:14px}
+.nv-hint::after{content:'';position:absolute;left:-7px;bottom:14px;border:8px solid transparent;border-right-color:#fff;border-left:0}
+
+.nv-panel{position:fixed;left:20px;bottom:100px;z-index:75;width:400px;height:min(660px,calc(100vh - 120px));border-radius:24px;overflow:hidden;
+  display:flex;flex-direction:column;color:#e8eeff;font-size:14px;
+  background:radial-gradient(120% 70% at 50% 0%,#18357a 0%,#0b1636 45%,#060b1f 100%);
+  box-shadow:0 30px 80px rgba(6,11,31,.55),inset 0 0 0 1px rgba(130,175,255,.18);transform-origin:bottom left;animation:nvOpen .32s cubic-bezier(.2,1,.3,1)}
+.nv-panel::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:.55;
+  background-image:radial-gradient(1px 1px at 12% 18%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 78% 12%,#fff 50%,transparent 51%),
+  radial-gradient(1.5px 1.5px at 40% 30%,#bcd4ff 50%,transparent 51%),radial-gradient(1px 1px at 88% 44%,#fff 50%,transparent 51%),
+  radial-gradient(1px 1px at 22% 62%,#fff 50%,transparent 51%),radial-gradient(1.5px 1.5px at 64% 70%,#bcd4ff 50%,transparent 51%),
+  radial-gradient(1px 1px at 8% 88%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 92% 86%,#fff 50%,transparent 51%),
+  radial-gradient(1px 1px at 52% 52%,#fff 50%,transparent 51%),radial-gradient(1px 1px at 33% 92%,#fff 50%,transparent 51%)}
+.nv-panel>*{position:relative}
+.nv-head{display:flex;align-items:center;gap:11px;padding:14px 14px 12px;border-bottom:1px solid rgba(140,180,255,.12);background:rgba(6,11,31,.25);backdrop-filter:blur(8px)}
+.nv-av{width:44px;height:44px;border-radius:14px;background:radial-gradient(circle at 50% 35%,#1d3a86,#0b1636);display:grid;place-items:center;box-shadow:inset 0 0 0 1px rgba(140,190,255,.25)}
+.nv-av svg{width:36px;height:36px;filter:drop-shadow(0 0 6px rgba(74,163,255,.7))}
+.nv-ttl{flex:1;min-width:0}.nv-ttl b{font-size:16px;letter-spacing:.01em}
+.nv-ttl small{display:flex;align-items:center;gap:6px;color:#9fb6e8;font-size:12px}
+.nv-ttl small i{width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 8px #22c55e}
+.nv-ib{width:36px;height:36px;border-radius:11px;background:rgba(255,255,255,.07);color:#dbe6ff;font-size:16px;display:grid;place-items:center}
+.nv-ib:hover{background:rgba(255,255,255,.14)}
+.nv-ib.on{background:rgba(59,130,246,.35);color:#fff}
+
+.nv-msgs{flex:1;overflow-y:auto;padding:16px 14px 8px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+.nv-msgs::-webkit-scrollbar{width:6px}.nv-msgs::-webkit-scrollbar-thumb{background:rgba(140,180,255,.25);border-radius:9px}
+.nv-row{display:flex;gap:8px;align-items:flex-end;animation:nvUp .28s ease both}
+.nv-row.me{justify-content:flex-end}
+.nv-mini{width:28px;height:28px;flex:0 0 28px;border-radius:9px;background:#0b1636;display:grid;place-items:center;box-shadow:inset 0 0 0 1px rgba(140,190,255,.22)}
+.nv-mini svg{width:23px;height:23px}
+.nv-m{max-width:84%;padding:10px 13px;border-radius:17px;line-height:1.5;word-wrap:break-word}
+.nv-row.bot .nv-m{background:rgba(255,255,255,.075);border:1px solid rgba(140,180,255,.14);border-bottom-left-radius:6px}
+.nv-row.me .nv-m{background:linear-gradient(135deg,#3b82f6,#2563eb);border-bottom-right-radius:6px;box-shadow:0 6px 18px rgba(37,99,235,.35)}
+.nv-m b{color:#fff}.nv-row.bot .nv-m b{color:#9ed0ff}
+.nv-m .nv-sub{display:block;color:#9fb6e8;font-size:12px;margin-top:2px}
+.nv-acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.nv-acts button{padding:7px 12px;border-radius:999px;background:rgba(59,130,246,.18);border:1px solid rgba(96,165,250,.5);color:#cfe3ff;font-weight:700;font-size:12.5px}
+.nv-acts button:hover{background:rgba(59,130,246,.35);color:#fff}
+.nv-acts button:disabled{opacity:.45;cursor:default}
+.nv-typ{display:inline-flex;gap:4px;padding:4px 2px}
+.nv-typ i{width:7px;height:7px;border-radius:50%;background:#8fb6ff;animation:nvDot 1.1s infinite}
+.nv-typ i:nth-child(2){animation-delay:.15s}.nv-typ i:nth-child(3){animation-delay:.3s}
+
+.nv-hero{text-align:center;padding:10px 6px 6px}
+.nv-hero .nv-bub{display:inline-block;background:#fff;color:#0b1636;font-weight:900;font-size:17px;padding:8px 15px;border-radius:14px;position:relative;animation:nvPop .5s .1s cubic-bezier(.2,1.4,.4,1) both}
+.nv-hero .nv-bub::after{content:'';position:absolute;left:50%;bottom:-7px;margin-left:-7px;border:7px solid transparent;border-top-color:#fff;border-bottom:0}
+.nv-hero .nv-big{width:118px;height:118px;margin:14px auto 6px;filter:drop-shadow(0 0 22px rgba(59,130,246,.75))}
+.nv-hero h3{font-size:21px;font-weight:900;line-height:1.2;margin:4px 0 10px;animation:nvUp .5s .35s both}
+.nv-hero h3 span{color:#3b8bff}
+.nv-tags{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;animation:nvUp .5s .55s both}
+.nv-tags span{font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;background:rgba(37,99,235,.18);border:1px solid rgba(96,165,250,.45)}
+.nv-tags span::before{content:'●';color:#22c55e;margin-right:5px;font-size:10px}
+
+.nv-chips{display:flex;gap:7px;overflow-x:auto;padding:8px 14px 4px;scrollbar-width:none}
+.nv-chips::-webkit-scrollbar{display:none}
+.nv-chips button{white-space:nowrap;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(140,180,255,.2);color:#dbe6ff;font-weight:700;font-size:12.5px}
+.nv-chips button:hover{border-color:#60a5fa;background:rgba(59,130,246,.2)}
+.nv-bar{display:flex;gap:8px;align-items:center;padding:10px 12px calc(12px + env(safe-area-inset-bottom));background:rgba(6,11,31,.35)}
+.nv-bar input{flex:1;min-width:0;background:rgba(255,255,255,.07);border:1px solid rgba(140,180,255,.2);border-radius:14px;padding:12px 14px;color:#fff;outline:none;font-size:15px}
+.nv-bar input::placeholder{color:#7f93c2}
+.nv-bar input:focus{border-color:#60a5fa;box-shadow:0 0 0 3px rgba(59,130,246,.25)}
+.nv-mic,.nv-send{width:46px;height:46px;flex:0 0 46px;border-radius:14px;display:grid;place-items:center;font-size:19px}
+.nv-mic{background:rgba(255,255,255,.08);color:#dbe6ff}
+.nv-mic.rec{background:#ef4444;color:#fff;animation:nvRec 1.2s infinite}
+.nv-send{background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.4)}
+.nv-wave{display:none;align-items:center;justify-content:center;gap:4px;padding:6px 0 2px;color:#fca5a5;font-weight:700;font-size:12px}
+.nv-wave.on{display:flex}
+.nv-wave i{width:4px;height:14px;border-radius:4px;background:#f87171;animation:nvWave .9s infinite ease-in-out}
+.nv-wave i:nth-child(2){animation-delay:.1s}.nv-wave i:nth-child(3){animation-delay:.2s}.nv-wave i:nth-child(4){animation-delay:.3s}.nv-wave i:nth-child(5){animation-delay:.4s}
+
+/* robot */
+.nvbot .nv-eye{transform-box:fill-box;transform-origin:center;animation:nvBlink 4.5s infinite}
+.nvbot .nv-mouth{transform-box:fill-box;transform-origin:center}
+.nv-talk .nvbot .nv-mouth{animation:nvTalk .28s infinite alternate}
+.nv-float{animation:nvFloat 3.2s ease-in-out infinite}
+
+@keyframes nvRing{0%{transform:scale(.9);opacity:.9}80%,100%{transform:scale(1.35);opacity:0}}
+@keyframes nvPop{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes nvOpen{0%{transform:scale(.6) translateY(30px);opacity:0}100%{transform:none;opacity:1}}
+@keyframes nvUp{0%{transform:translateY(10px);opacity:0}100%{transform:none;opacity:1}}
+@keyframes nvDot{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-5px);opacity:1}}
+@keyframes nvBlink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes nvTalk{0%{transform:scaleY(.5)}100%{transform:scaleY(1.6)}}
+@keyframes nvFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes nvRec{0%{box-shadow:0 0 0 0 rgba(239,68,68,.6)}100%{box-shadow:0 0 0 12px rgba(239,68,68,0)}}
+@keyframes nvWave{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1.4)}}
+
+@media (max-width:640px){
+  .nv-fab{left:auto;right:12px;bottom:calc(78px + env(safe-area-inset-bottom));width:58px;height:58px}
+  .nv-fab svg{width:44px;height:44px}
+  .nv-hint{left:auto;right:80px;bottom:calc(90px + env(safe-area-inset-bottom))}
+  .nv-hint::after{left:auto;right:-7px;border-right-color:transparent;border-left:8px solid #fff;border-right:0}
+  .nv-panel{inset:0;width:auto;height:auto;border-radius:0;transform-origin:bottom right}
+  .nv-head{padding-top:calc(12px + env(safe-area-inset-top))}
+}
+</style>
+
+<button class="nv-fab hidden" id="nvFab" title="Novi · tu asistente"></button>
+<div class="nv-hint hidden" id="nvHint"></div>
+<div class="nv-panel hidden" id="nvPanel">
+  <div class="nv-head">
+    <div class="nv-av" id="nvAv"></div>
+    <div class="nv-ttl"><b>Novi</b><small><i></i>En línea · Asistente de JB Nova</small></div>
+    <button class="nv-ib" id="nvVoice" title="Que Novi responda hablando">🔈</button>
+    <button class="nv-ib" id="nvClose" title="Cerrar">✕</button>
+  </div>
+  <div class="nv-msgs" id="nvMsgs"></div>
+  <div class="nv-wave" id="nvWave"><i></i><i></i><i></i><i></i><i></i><span style="margin-left:8px">Te escucho… toca el micro para terminar</span></div>
+  <div class="nv-chips" id="nvChips"></div>
+  <div class="nv-bar">
+    <button class="nv-mic" id="nvMic" title="Nota de voz">🎙️</button>
+    <input id="nvIn" placeholder="Pregúntame lo que quieras…" autocomplete="off" enterkeyhint="send">
+    <button class="nv-send" id="nvSend" title="Enviar">➤</button>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   🧠 NUTRIR A NOVI — respuestas propias de cada negocio.
+   p = frases o palabras que dispara la pregunta (sin acentos, minúsculas)
+   r = lo que responde Novi.   Agregá todas las que quieras.
+   ===================================================================== */
+var NOVI_FAQ = [
+  { p: ['horario', 'a que hora abren', 'a que hora cierran', 'hora de abrir'], r: 'Nuestro horario es de lunes a sábado de 8:00 am a 8:00 pm, y los domingos de 9:00 am a 2:00 pm. 🕗' },
+  { p: ['direccion', 'donde quedan', 'ubicacion', 'donde estan'], r: 'Estamos en … (poné aquí la dirección de la tienda) 📍' },
+  { p: ['soporte', 'jb nova', 'quien hizo el sistema', 'ayuda tecnica'], r: 'Este sistema lo hizo **JB Nova Digital Solutions** 💙. Si algo falla, escríbeles por WhatsApp y te ayudan.' }
+];
+
+var Novi = (function () {
+  /* ---------- robot ---------- */
+  function bot(cls) {
+    return '<svg class="nvbot ' + (cls || '') + '" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">' +
+      '<defs><linearGradient id="nvG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5cb2ff"/><stop offset="1" stop-color="#2563eb"/></linearGradient></defs>' +
+      '<rect x="58" y="16" width="4" height="14" rx="2" fill="#5aa8ff"/>' +
+      '<path d="M60 3 L63.5 10 L71 13 L63.5 16 L60 23 L56.5 16 L49 13 L56.5 10 Z" fill="#8cc8ff"/>' +
+      '<rect x="9" y="54" width="13" height="26" rx="6" fill="#2f6fe0"/><rect x="98" y="54" width="13" height="26" rx="6" fill="#2f6fe0"/>' +
+      '<rect x="18" y="29" width="84" height="76" rx="30" fill="url(#nvG)"/>' +
+      '<rect x="30" y="47" width="60" height="38" rx="19" fill="#0b1430"/>' +
+      '<ellipse class="nv-eye" cx="48" cy="63" rx="6" ry="7" fill="#8be3ff"/><ellipse class="nv-eye" cx="72" cy="63" rx="6" ry="7" fill="#8be3ff"/>' +
+      '<path class="nv-mouth" d="M52 74 Q60 81 68 74" stroke="#8be3ff" stroke-width="3.6" fill="none" stroke-linecap="round"/></svg>';
+  }
+
+  /* ---------- utilidades ---------- */
+  var booted = false, isOpen = false, data = null, dataAt = 0, loading = null, tasaInfo = null, pending = [];
+  var voiceAlways = false, lastWasVoice = false, heroShown = false;
+  try { voiceAlways = localStorage.getItem('nv_voice') === '1'; } catch (e) {}
+  function el(id) { return document.getElementById(id); }
+  function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+  function norm(s) {
+    return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/[¿?¡!.,;:()"'*\/\\-]/g, ' ').replace(/\s+/g, ' ').trim();
+  }
+  function n2(n) { return (Number(n) || 0).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function fmtRate(n) { return n2(n) + ' Bs'; }
+  function md(s) {
+    return esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+  }
+  function today() { return S.today || new Date().toISOString().slice(0, 10); }
+  function addDays(key, d) { return addDaysKey(key, d); }
+  function ddmm(key) { var p = key.split('-'); return p[2] + '/' + p[1]; }
+  var HI = ['¡Épale!', '¡Mira!', 'Fíjate,', 'Dale,', 'Listo, mi pana.', 'Aquí tienes,', 'Chévere,'];
+
+  /* ---------- datos del panel ---------- */
+  function loadData(force) {
+    if (!force && data && Date.now() - dataAt < 60000) return Promise.resolve(data);
+    if (loading) return loading;
+    loading = api('noviData').then(function (d) {
+      data = d; dataAt = Date.now(); loading = null;
+      if (d.cartera) cliData = d.cartera;
+      return d;
+    }, function (e) { loading = null; throw e; });
+    return loading;
+  }
+  function loadTasa() {
+    return api('getTasaBCV').then(function (t) { tasaInfo = t; return t; });
+  }
+
+  /* ---------- UI ---------- */
+  function scroll() { var m = el('nvMsgs'); m.scrollTop = m.scrollHeight; }
+  function addMe(txt) {
+    var r = document.createElement('div'); r.className = 'nv-row me';
+    r.innerHTML = '<div class="nv-m">' + esc(txt) + '</div>';
+    el('nvMsgs').appendChild(r); scroll();
+  }
+  function typing() {
+    var r = document.createElement('div'); r.className = 'nv-row bot';
+    r.innerHTML = '<div class="nv-mini">' + bot() + '</div><div class="nv-m"><span class="nv-typ"><i></i><i></i><i></i></span></div>';
+    el('nvMsgs').appendChild(r); scroll();
+    return r;
+  }
+  // say(texto, acciones[{l, f}], filaDeTyping)
+  function say(txt, acts, row) {
+    if (!row) { row = document.createElement('div'); row.className = 'nv-row bot'; el('nvMsgs').appendChild(row); }
+    row.innerHTML = '<div class="nv-mini">' + bot() + '</div><div class="nv-m">' + md(txt) + '</div>';
+    if (acts && acts.length) {
+      var box = document.createElement('div'); box.className = 'nv-acts';
+      acts.forEach(function (a) {
+        var b = document.createElement('button'); b.textContent = a.l;
+        b.onclick = function () { Array.prototype.forEach.call(box.children, function (x) { x.disabled = true; }); a.f(); };
+        box.appendChild(b);
+      });
+      row.querySelector('.nv-m').appendChild(box);
+    }
+    scroll();
+    if (voiceAlways || lastWasVoice) speak(txt);
+  }
+  function hero() {
+    if (heroShown) return; heroShown = true;
+    var h = document.createElement('div'); h.className = 'nv-hero';
+    h.innerHTML = '<div class="nv-bub">¡Yo! Soy Novi.</div><div class="nv-big nv-float">' + bot() + '</div>' +
+      '<h3>Tu asistente virtual<br><span>de JB Nova.</span></h3>' +
+      '<div class="nv-tags"><span>Te ayuda en tu panel</span><span>Te escucha y te habla</span></div>';
+    el('nvMsgs').appendChild(h);
+  }
+  var CHIPS = [
+    ['💱 Tasa del día', 'a como esta el dolar'], ['📊 Ventas de hoy', 'cuanto vendimos hoy'], ['🧾 Resumen', 'dame un resumen'],
+    ['📦 Qué reponer', 'que hay que reponer'], ['📒 Quién me debe', 'quien me debe'], ['💵 Caja de hoy', 'como esta la caja'],
+    ['🏆 Lo más vendido', 'que es lo mas vendido'], ['💸 Gastos', 'gastos del mes'], ['💡 Consejos', 'dame un consejo'], ['❓ Ayuda', 'que puedes hacer']
+  ];
+  function chips() {
+    el('nvChips').innerHTML = CHIPS.map(function (c, i) { return '<button data-i="' + i + '">' + c[0] + '</button>'; }).join('');
+  }
+
+  /* ---------- voz: hablar ---------- */
+  var voice = null;
+  function pickVoice() {
+    if (!window.speechSynthesis) return null;
+    var vs = speechSynthesis.getVoices().filter(function (v) { return /^es/i.test(v.lang); });
+    if (!vs.length) return null;
+    var pref = ['es-VE', 'es-US', 'es-419', 'es-CO', 'es-MX', 'es-AR', 'es-ES'];
+    vs.sort(function (a, b) {
+      var ia = pref.indexOf(a.lang.replace('_', '-')), ib = pref.indexOf(b.lang.replace('_', '-'));
+      ia = ia < 0 ? 99 : ia; ib = ib < 0 ? 99 : ib;
+      if (ia !== ib) return ia - ib;
+      var ga = /google|natural|online|neural/i.test(a.name) ? 0 : 1, gb = /google|natural|online|neural/i.test(b.name) ? 0 : 1;
+      return ga - gb;
+    });
+    return vs[0];
+  }
+  if (window.speechSynthesis) speechSynthesis.onvoiceschanged = function () { voice = pickVoice(); };
+  function speechText(t) {
+    return String(t)
+      .replace(/\*\*/g, '')
+      .replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}\u{2B00}-\u{2BFF}\u{FE0F}\u{200D}]/gu, '')
+      .replace(/\$\s?(\d+)\.(\d{2})/g, '$1 con $2 dólares').replace(/\$\s?(\d+)/g, '$1 dólares')
+      .replace(/Bs\/\$/g, 'bolívares por dólar').replace(/\bBs\.?/g, 'bolívares')
+      .replace(/#(\w+)/g, 'código $1').replace(/·/g, ',').replace(/\n+/g, '. ').replace(/\s+/g, ' ');
+  }
+  function speak(t) {
+    if (!window.speechSynthesis) return;
+    try {
+      speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(speechText(t).slice(0, 600));
+      voice = voice || pickVoice();
+      u.lang = voice ? voice.lang : 'es-VE'; if (voice) u.voice = voice;
+      u.rate = 1.05; u.pitch = 1.08;
+      u.onstart = function () { el('nvPanel').classList.add('nv-talk'); };
+      u.onend = u.onerror = function () { el('nvPanel').classList.remove('nv-talk'); };
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+  function setVoiceBtn() {
+    var b = el('nvVoice'); b.textContent = voiceAlways ? '🔊' : '🔈'; b.classList.toggle('on', voiceAlways);
+    b.title = voiceAlways ? 'Novi responde hablando (tocá para silenciar)' : 'Que Novi responda hablando';
+  }
+
+  /* ---------- voz: notas de voz ---------- */
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition, rec = null, recOn = false, heard = '';
+  function micToggle() {
+    if (!SR) { say('Uy, este navegador no me deja escucharte 😅. Abrí el panel en **Google Chrome** y ahí sí me podés mandar notas de voz.'); return; }
+    if (recOn) { rec.stop(); return; }
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    rec = new SR(); rec.lang = 'es-VE'; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+    heard = '';
+    rec.onstart = function () { recOn = true; el('nvMic').classList.add('rec'); el('nvWave').classList.add('on'); el('nvIn').value = ''; el('nvIn').placeholder = 'Te escucho…'; };
+    rec.onresult = function (e) {
+      var t = ''; for (var i = 0; i < e.results.length; i++) t += e.results[i][0].transcript;
+      heard = t; el('nvIn').value = t;
+    };
+    rec.onerror = function (e) {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') say('Necesito permiso para usar el micrófono 🎙️. Tocá el candadito de la barra de direcciones y permití el micrófono.');
+      else if (e.error === 'no-speech') say('No te escuché nada, chamo. Probá otra vez hablando un poquito más cerca 🎙️');
+    };
+    rec.onend = function () {
+      recOn = false; el('nvMic').classList.remove('rec'); el('nvWave').classList.remove('on'); el('nvIn').placeholder = 'Pregúntame lo que quieras…';
+      if (heard.trim()) { el('nvIn').value = ''; ask(heard.trim(), true); }
+    };
+    try { rec.start(); } catch (e) {}
+  }
+
+  /* ---------- buscar productos y clientes ---------- */
+  var STOP = {};
+  ('cuanto cuanta cuantos cuantas cuesta cuestan vale valen precio precios stock hay queda quedan tienes tenemos tengo de del la las el los un una unos unas que me mi dame dime sale salen esta estan al por favor novi existencia existencias producto productos kilo kilos kg cual como para con sin queda mas menos debe deben deuda saldo cliente cuenta cobrar fiado abono paga pago pagar le lo se ya hoy oye chamo mira pana ' +
+   'vendimos vendido ventas venta tasa dolar dolares caja gastos inventario reponer hola buenas').split(' ').forEach(function (w) { STOP[w] = 1; });
+  var KW = {};   // palabras que también son de intenciones: pesan menos al buscar productos
+  function words(t) {
+    return t.split(' ').filter(function (w) { return w.length >= 3 && !STOP[w]; });
+  }
+  function hasWord(name, w) {
+    var n = ' ' + name + ' ';
+    if (n.indexOf(' ' + w) >= 0) return true;
+    if (w.length > 4 && /s$/.test(w) && n.indexOf(' ' + w.slice(0, -1)) >= 0) return true;
+    return false;
+  }
+  function findProducts(t) {
+    var ws = words(t); if (!ws.length) return { list: [], score: 0 };
+    var out = [];
+    S.products.forEach(function (p) {
+      var name = norm(p.name), sc = 0;
+      ws.forEach(function (w) {
+        if (norm(p.code) === w) sc += 3;
+        else if (hasWord(name, w)) sc += KW[w] ? 0.4 : 1;
+      });
+      if (sc > 0) out.push({ p: p, sc: sc, f: sc / name.split(' ').length });
+    });
+    if (!out.length) return { list: [], score: 0 };
+    out.sort(function (a, b) { return b.sc - a.sc || b.f - a.f; });
+    var top = out[0].sc;
+    return { list: out.filter(function (x) { return x.sc === top; }).slice(0, 5).map(function (x) { return x.p; }), score: top };
+  }
+  function findClients(t) {
+    var ws = words(t); if (!ws.length) return { list: [], score: 0 };
+    var out = [];
+    (S.clients || []).forEach(function (c) {
+      var name = norm(c.name), sc = 0;
+      ws.forEach(function (w) { if (hasWord(name, w)) sc += 1; });
+      if (sc > 0) out.push({ c: c, sc: sc });
+    });
+    if (!out.length) return { list: [], score: 0 };
+    out.sort(function (a, b) { return b.sc - a.sc; });
+    var top = out[0].sc;
+    return { list: out.filter(function (x) { return x.sc === top; }).slice(0, 4).map(function (x) { return x.c; }), score: top };
+  }
+
+  /* ---------- acciones del panel ---------- */
+  function goTab(t) { var b = document.querySelector('#nav [data-tab="' + t + '"]'); if (b) b.click(); }
+  function goAndClose(t, extra) { return function () { close(); goTab(t); if (extra) setTimeout(extra, 60); }; }
+  function updateRate(v) {
+    api('setRate', v).then(function (r) {
+      setRateUI(r.rate, r.rateUpdated); clearBadge();
+      say('Listo ✅ La tasa quedó en **' + fmtRate(r.rate) + '** por dólar. Las ventas nuevas ya se cobran con esa.');
+    }).catch(function (e) { say('No pude cambiar la tasa: ' + e.message); });
+  }
+  function openClient(id) { return function () { close(); setTimeout(function () { clientModal(id); }, 50); }; }
+  function remind(c) { return function () { close(); setTimeout(function () { shareModal('Recordatorio de pago', c.phone, reminderText(c), c.id); }, 50); }; }
+  function clientById(id) { return ((data && data.cartera && data.cartera.clients) || []).filter(function (c) { return c.id === id; })[0]; }
+
+  /* ---------- respuestas ---------- */
+  function rTasa(auto) {
+    return loadTasa().then(function (t) {
+      var txt = '💱 **Dólar BCV de hoy:** ' + fmtRate(t.bcv) + (t.fecha ? ' (' + t.fecha + ')' : '');
+      if (t.paralelo) txt += '\nParalelo de referencia: ' + fmtRate(t.paralelo);
+      txt += '\nEn tu panel tienes: **' + fmtRate(S.rate) + '**';
+      if (t.bcv > 0 && Math.abs(t.bcv - S.rate) > 0.009) {
+        txt += '\n\nOjo, están distintas 👀 ¿La actualizo a la del BCV?';
+        return { t: txt, a: [{ l: '✅ Sí, actualízala', f: function () { updateRate(t.bcv); } }, { l: 'No, déjala así', f: function () { clearBadge(); say('Tranquilo, la dejo como está 👍'); } }] };
+      }
+      return { t: txt + '\n\n✅ Tu panel ya está al día con el BCV.' };
+    }, function (e) {
+      return { t: 'No pude consultar el BCV ahorita 😕 (' + e.message + ').\nEn tu panel la tasa está en **' + fmtRate(S.rate) + '**.' };
+    });
+  }
+  function rTasaUpd() {
+    return loadTasa().then(function (t) {
+      if (Math.abs(t.bcv - S.rate) <= 0.009) return { t: 'La tasa ya está igual a la del BCV: **' + fmtRate(t.bcv) + '** ✅' };
+      updateRate(t.bcv);
+      return { t: 'Dale, la pongo en la del BCV de hoy: **' + fmtRate(t.bcv) + '**…' };
+    });
+  }
+  function rConvert(m) {
+    var v = parseFloat(m.v.replace(',', '.')), toBs = m.usd, rate = S.rate;
+    if (!(rate > 0)) return { t: 'Todavía no hay tasa cargada en el panel.' };
+    if (toBs) return { t: '💱 **$' + v.toFixed(2) + '** son **' + bs(v * rate) + '**\n(tasa del panel: ' + fmtRate(rate) + ')' };
+    return { t: '💱 **' + bs(v) + '** son **' + usd(v / rate) + '**\n(tasa del panel: ' + fmtRate(rate) + ')' };
+  }
+  function rVentasHoy(d) {
+    var x = d.dash, ayer = x.week.length > 1 ? x.week[x.week.length - 2].usd : 0;
+    if (!x.todayUsd) return { t: 'Hoy todavía no hay ventas registradas. ¡Arranquemos, que el día está bonito! ☀️' + (ayer ? '\nAyer cerraste en ' + usd(ayer) + '.' : '') };
+    var m = x.methods, parts = [];
+    if (m['Efectivo']) parts.push('💵 Efectivo ' + usd(m['Efectivo']));
+    if (m['Pago Móvil']) parts.push('📱 Pago Móvil ' + usd(m['Pago Móvil']));
+    if (m['Tarjeta']) parts.push('💳 Tarjeta ' + usd(m['Tarjeta']));
+    if (m['Fiado']) parts.push('📒 Fiado ' + usd(m['Fiado']));
+    var txt = pick(HI) + ' Hoy llevamos **' + usd(x.todayUsd) + '** (' + bs(x.todayBs) + ') en **' + x.todayTickets + '** venta(s), ' + x.todayUnits + ' unidades.\n' + parts.join('\n');
+    if (ayer) txt += '\n\nAyer cerraste en ' + usd(ayer) + '. ' + (x.todayUsd >= ayer ? '¡Ya lo pasamos, vamos durísimo! 🔥' : 'Faltan ' + usd(ayer - x.todayUsd) + ' para igualarlo, ¡pa\'lante! 💪');
+    return { t: txt };
+  }
+  function rAyer(d) {
+    var w = d.dash.week, y = w[w.length - 2];
+    return { t: 'Ayer (' + y.label + ') se vendieron **' + usd(y.usd) + '**.' + (w.length > 2 ? '\nAntier: ' + usd(w[w.length - 3].usd) + '.' : '') };
+  }
+  function rSemana(d) {
+    var w = d.dash.week, tot = 0, best = w[0];
+    w.forEach(function (x) { tot += x.usd; if (x.usd > best.usd) best = x; });
+    return { t: '📅 **Últimos 7 días:** ' + usd(tot) + '\nPromedio diario: ' + usd(tot / 7) + '\nMejor día: **' + best.label + '** con ' + usd(best.usd) + '\n\n' + w.map(function (x) { return x.label + ' · ' + usd(x.usd); }).join('\n') };
+  }
+  function rMes(d) {
+    var t = today(), day = Number(t.slice(8, 10)), p = t.split('-'), dim = new Date(+p[0], +p[1], 0).getDate();
+    var avg = d.dash.monthUsd / day;
+    return { t: '🗓️ **Ventas del mes:** ' + usd(d.dash.monthUsd) + '\nPromedio por día: ' + usd(avg) + '\nSi seguimos a este ritmo, cerramos el mes en unos **' + usd(avg * dim) + '** 📈' };
+  }
+  function rTop(d) {
+    var t = d.dash.top; if (!t.length) return { t: 'Todavía no hay ventas en los últimos 30 días.' };
+    return { t: '🏆 **Lo más vendido (30 días):**\n' + t.slice(0, 6).map(function (x, i) { return (i + 1) + '. ' + x.name + ' · ' + x.units + ' u · ' + usd(x.usd); }).join('\n') + '\n\nNo dejes que se te acabe el #1, ¡ese es el que mueve la caja! 💪' };
+  }
+  function rUltimas(d) {
+    var t = d.tickets || []; if (!t.length) return { t: 'No hay ventas recientes.' };
+    return { t: '🧾 **Últimas ventas:**\n' + t.slice(0, 6).map(function (x) { return x.time + ' · ' + usd(x.totalUsd) + ' · ' + x.method + '\n   ' + x.items.slice(0, 3).join(', ') + (x.items.length > 3 ? '…' : ''); }).join('\n'), a: [{ l: 'Ver en Resumen', f: goAndClose('dash') }] };
+  }
+  function lowList() { return S.products.filter(function (p) { return p.stock <= p.min; }).sort(function (a, b) { return a.stock - b.stock; }); }
+  function rReponer() {
+    var l = lowList(); if (!l.length) return { t: 'Todo el inventario está por encima del mínimo ✅. ¡Bien surtidos!' };
+    return { t: '📦 Hay **' + l.length + '** producto(s) para reponer:\n' + l.slice(0, 12).map(function (p) { return (p.stock <= 0 ? '🔴 ' : '🟠 ') + p.name + ' · quedan ' + r2(p.stock) + (p.min ? ' (mín. ' + p.min + ')' : ''); }).join('\n') + (l.length > 12 ? '\n…y ' + (l.length - 12) + ' más.' : ''),
+      a: [{ l: 'Abrir Inventario con alertas', f: goAndClose('inv', function () { $('invFilter').value = 'alert'; renderInv(); }) }] };
+  }
+  function rSinStock() {
+    var l = S.products.filter(function (p) { return p.stock <= 0; });
+    if (!l.length) return { t: 'No hay nada agotado ✅' };
+    return { t: '🔴 **Agotados (' + l.length + '):**\n' + l.slice(0, 15).map(function (p) { return p.name; }).join('\n') };
+  }
+  function rInventario() {
+    var units = 0, vc = 0, vv = 0, cats = {};
+    S.products.forEach(function (p) { var s = Math.max(0, p.stock); units += s; vc += s * p.cost; vv += s * p.price; cats[p.cat] = 1; });
+    return { t: '📦 **Inventario:** ' + S.products.length + ' productos en ' + Object.keys(cats).length + ' categorías\nUnidades en existencia: ' + r2(units) +
+      '\nValor a costo: **' + usd(vc) + '**\nValor a precio de venta: **' + usd(vv) + '**\nGanancia si vendes todo: **' + usd(vv - vc) + '** 💰' };
+  }
+  function prodLine(p) {
+    var left = p.stock, st = left <= 0 ? '🔴 agotado' : left <= p.min ? '🟠 quedan ' + r2(left) : '✅ ' + r2(left) + ' disponibles';
+    var mg = p.cost > 0 ? ' · margen ' + Math.round((p.price - p.cost) / p.cost * 100) + '%' : '';
+    return '**' + p.name + '** (#' + p.code + ')\n' + usd(p.price) + (p.weight ? ' por kg' : '') + ' = ' + bs(p.price * S.rate) + '\n' + st + mg;
+  }
+  function rProducto(f) {
+    if (f.list.length === 1) return { t: prodLine(f.list[0]) };
+    return { t: 'Encontré estos:\n\n' + f.list.map(prodLine).join('\n\n') };
+  }
+  function rDeudas(d) {
+    var c = d.cartera, l = c.clients.filter(function (x) { return x.owed > 0.004; });
+    if (!l.length) return { t: '¡Nadie te debe nada! 🎉 La cartera está limpiecita.' };
+    var txt = '📒 Te deben **' + usd(c.totalOwed) + '** entre **' + l.length + '** cliente(s)' + (c.overdueCount ? ', y **' + c.overdueCount + '** tienen pagos vencidos 🔴' : '') + '.\n\n' +
+      l.slice(0, 8).map(function (x) { return (x.overdue ? '🔴 ' : '🟢 ') + x.name + ' · ' + usd(x.owed) + (x.nextDue ? ' · paga ' + x.nextDue : ''); }).join('\n');
+    return { t: txt, a: l.slice(0, 3).map(function (x) { return { l: 'Ver ' + x.name.split(' ')[0], f: openClient(x.id) }; }).concat([{ l: 'Abrir Clientes', f: goAndClose('cli') }]) };
+  }
+  function rVencidos(d) {
+    var l = d.cartera.clients.filter(function (x) { return x.overdue && x.owed > 0.004; });
+    if (!l.length) return { t: 'Nadie está atrasado con los pagos ✅. ¡Así da gusto!' };
+    return { t: '🔴 **Pagos vencidos (' + l.length + '):**\n' + l.slice(0, 10).map(function (x) { return x.name + ' · debe ' + usd(x.owed) + (x.nextDue ? ' · desde ' + x.nextDue : ''); }).join('\n') + '\n\nMándales un recordatorio por WhatsApp, sin pena 😉',
+      a: l.slice(0, 3).filter(function (x) { return x.phone; }).map(function (x) { return { l: '💬 ' + x.name.split(' ')[0], f: remind(x) }; }) };
+  }
+  function rProxCobros(d) {
+    var a = today(), b = addDays(a, 7);
+    var l = d.cartera.clients.filter(function (x) { return x.owed > 0.004 && x.nextKey && x.nextKey >= a && x.nextKey <= b; })
+      .sort(function (x, y) { return x.nextKey < y.nextKey ? -1 : 1; });
+    if (!l.length) return { t: 'No hay cobros programados para los próximos 7 días.' };
+    return { t: '📆 **Cobros de los próximos 7 días:**\n' + l.map(function (x) { return x.nextDue + ' · ' + x.name + ' · debe ' + usd(x.owed); }).join('\n') };
+  }
+  function rCliente(f, d) {
+    var out = f.list.map(function (s) { return clientById(s.id) || s; });
+    if (out.length > 1) return { t: 'Tengo varios con ese nombre:\n' + out.map(function (c) { return c.name + ' · ' + usd(c.owed || 0); }).join('\n'), a: out.map(function (c) { return { l: c.name, f: openClient(c.id) }; }) };
+    var c = out[0];
+    if (!(c.owed > 0.004)) return { t: '**' + c.name + '** no debe nada ✅', a: [{ l: 'Ver cuenta', f: openClient(c.id) }] };
+    var acts = [{ l: 'Ver cuenta', f: openClient(c.id) }];
+    if (c.phone) acts.push({ l: '💬 Recordatorio', f: remind(c) });
+    return { t: '**' + c.name + '** debe **' + usd(c.owed) + '** (' + bs(c.owed * S.rate) + ')' + (c.nextDue ? '\nPróximo pago: ' + c.nextDue : '') + (c.overdue ? '\n🔴 Tiene pagos vencidos.' : '\n🟢 Va al día.'), a: acts };
+  }
+  function rCaja(d) {
+    var c = d.caja, txt = '💵 **Caja de hoy**\nEfectivo: ' + usd(c.efectivo) + '\nPago Móvil: ' + usd(c.pagoMovil) + '\nTarjeta: ' + usd(c.tarjeta) + '\n**Total cobrado: ' + usd(c.total) + '**' + (c.abonos ? '\n(incluye abonos de fiados: ' + usd(c.abonos) + ')' : '');
+    if (c.gastosEf) txt += '\nGastos pagados en efectivo: ' + usd(c.gastosEf);
+    if (c.fondo !== '') {
+      var teo = r2(Number(c.fondo) + c.efectivo - c.gastosEf);
+      txt += '\n\nEfectivo que debería haber en la gaveta: **' + usd(teo) + '**';
+      if (c.contado !== '') { var df = r2(Number(c.contado) - teo); txt += '\nContado: ' + usd(c.contado) + ' → ' + (Math.abs(df) < 0.005 ? '✅ cuadra exacto' : df < 0 ? '🔴 faltan ' + usd(-df) : '🟠 sobran ' + usd(df)); }
+    } else txt += '\n\nTodavía no cargaste el fondo inicial de hoy.';
+    return { t: txt, a: [{ l: 'Hacer arqueo', f: goAndClose('cash') }] };
+  }
+  function rGastos(d) {
+    var g = d.gastos, txt = '💸 **Gastos del mes:** ' + usd(g.monthTotal);
+    if (g.byCat.length) txt += '\n' + g.byCat.slice(0, 5).map(function (x) { return '• ' + x.cat + ': ' + usd(x.usd); }).join('\n');
+    if (g.ultimos && g.ultimos.length) txt += '\n\nÚltimos:\n' + g.ultimos.slice(0, 3).map(function (x) { return x.date + ' · ' + x.cat + (x.detail ? ' (' + x.detail + ')' : '') + ' · ' + usd(x.usd); }).join('\n');
+    if (d.dash.monthUsd > 0) txt += '\n\nEso es el **' + Math.round(g.monthTotal / d.dash.monthUsd * 100) + '%** de lo vendido este mes.';
+    return { t: txt, a: [{ l: 'Registrar gasto', f: goAndClose('gas') }] };
+  }
+  function rDinero(d) {
+    var b = d.gastos.balance;
+    return { t: '💰 **Dinero del negocio: ' + usd(b.total) + '**\n(' + bs(b.total * S.rate) + ')\n💵 En efectivo: ' + usd(b.efectivo) + '\n🏦 En banco/digital: ' + usd(b.digital) +
+      '\n\nCobrado: ' + usd(b.ventasTotal) + ' · Gastado: ' + usd(b.gastosTotal) + (d.cartera.totalOwed > 0 ? '\nY en la calle (fiado) tienes ' + usd(d.cartera.totalOwed) + ' por cobrar.' : '') };
+  }
+  function rResumen(d) {
+    var x = d.dash, low = lowList().length;
+    var txt = '🧾 **Resumen de hoy**\n📊 Ventas: **' + usd(x.todayUsd) + '** en ' + x.todayTickets + ' venta(s)\n🗓️ Mes: ' + usd(x.monthUsd) +
+      '\n📒 Por cobrar: ' + usd(d.cartera.totalOwed) + (d.cartera.overdueCount ? ' (' + d.cartera.overdueCount + ' vencidos 🔴)' : '') +
+      '\n📦 Para reponer: ' + low + ' producto(s)\n💰 Dinero del negocio: ' + usd(d.gastos.balance.total) + '\n💱 Tasa del panel: ' + fmtRate(S.rate);
+    return { t: txt };
+  }
+  function rConsejo(d) {
+    var tips = [], x = d.dash;
+    if (d.cartera.overdueCount) tips.push('🔴 Tienes ' + d.cartera.overdueCount + ' cliente(s) con pagos vencidos. Cobrar hoy es plata que entra sin vender nada.');
+    var low = lowList(); if (low.length) tips.push('📦 Repón ' + low.slice(0, 3).map(function (p) { return p.name; }).join(', ') + (low.length > 3 ? ' y otros' : '') + ' antes de que te pregunten y no haya.');
+    var cheap = S.products.filter(function (p) { return p.cost > 0 && p.price < p.cost * 1.1; });
+    if (cheap.length) tips.push('🏷️ ' + cheap.length + ' producto(s) tienen margen menor al 10% (ej: ' + cheap[0].name + '). Revisa esos precios.');
+    if (x.top.length) tips.push('🏆 Tu producto estrella es ' + x.top[0].name + '. Tenlo siempre a la vista y bien surtido.');
+    if (d.dash.monthUsd > 0 && d.gastos.monthTotal / d.dash.monthUsd > 0.5) tips.push('💸 Los gastos van por más de la mitad de lo vendido este mes. Ojo ahí.');
+    if (tasaInfo && Math.abs(tasaInfo.bcv - S.rate) > 0.009) tips.push('💱 La tasa del panel no es la del BCV de hoy. Actualízala para no perder plata.');
+    var noMin = S.products.filter(function (p) { return !p.min; }).length;
+    if (noMin) tips.push('🔔 ' + noMin + ' producto(s) no tienen stock mínimo. Pónselo y te aviso cuando se estén acabando.');
+    if (!tips.length) tips.push('Todo se ve en orden 👌. Sigue así, mi pana.');
+    return { t: '💡 **Mis consejos de hoy:**\n\n' + tips.slice(0, 4).join('\n\n') };
+  }
+  function rFecha() {
+    var n = new Date();
+    return { t: '📅 Hoy es ' + n.toLocaleDateString('es-VE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + ' y son las ' + n.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' }) + '.' };
+  }
+  var CHISTES = [
+    '¿Qué le dijo la arepa al queso? "Sin ti, mi vida no tiene relleno" 🫓😂',
+    '¿Por qué el cuaderno de fiado está triste? Porque todos le deben algo 📒😅',
+    'Mi pana, yo no tomo café… pero me cargo con la batería del celular ☕🤖',
+    '¿Qué hace un robot en una bodega? ¡Atiende al cliente en piloto automático! 🤖🛒'
+  ];
+  function rAyuda() {
+    return { t: '¡Pregúntame con confianza! Escribiendo o con nota de voz 🎙️. Por ejemplo:\n\n' +
+      '💱 "¿A cómo está el dólar?" · "Actualiza la tasa"\n💱 "¿Cuánto son 20 dólares en bolívares?"\n📊 "¿Cuánto vendimos hoy?" · "¿Y esta semana?" · "¿Y el mes?"\n' +
+      '🏆 "¿Qué es lo que más se vende?"\n📦 "¿Qué hay que reponer?" · "¿Cuánto cuesta la harina?"\n📒 "¿Quién me debe?" · "¿Cuánto debe María?" · "¿Quién está vencido?"\n' +
+      '💵 "¿Cómo está la caja?" · 💸 "Gastos del mes" · 💰 "¿Cuánta plata tengo?"\n🧭 "¿Cómo vendo fiado?" · "¿Cómo anulo una venta?" · "Llévame a inventario"' };
+  }
+
+  /* ---------- guía de uso del panel ---------- */
+  var G = {
+    vender: ['🛒 **Para vender:**\n1. En “Punto de venta”, escanea el código, escríbelo o toca el producto del catálogo.\n2. Elige cómo paga: Efectivo, Tarjeta, Pago Móvil o Fiado.\n3. Si es en efectivo, escribe lo que te dio y te calculo el vuelto.\n4. Toca **Cobrar** y listo, el stock baja solo.', 'pos'],
+    fiado: ['📒 **Vender fiado:**\n1. Arma la venta normal y elige **📒 Fiado**.\n2. Escribe el nombre del cliente y su WhatsApp.\n3. Pon en cuántas cuotas, cada cuánto y la fecha del primer pago.\n4. Si dejó algo de abono inicial, anótalo.\n5. Toca **Registrar fiado**: se crea la factura PDF y se la puedes mandar por WhatsApp.', 'pos'],
+    abono: ['💵 **Registrar un abono:**\nVe a “Clientes” → toca al cliente → en el pedido toca **+ Abono** → pon el monto y cómo pagó → Guardar. Te queda listo el mensaje de WhatsApp con el saldo nuevo.', 'cli'],
+    recordatorio: ['💬 **Recordatorio de pago:**\nEn “Clientes” toca al cliente y luego **💬 Recordatorio**. Se abre WhatsApp con el mensaje listo, solo le das enviar. También me puedes decir "¿quién está vencido?" y te doy los botones.', 'cli'],
+    factura: ['📄 **Factura PDF:**\nEn “Clientes” → cliente → pedido → **📄 Factura / enviar**. Se guarda en tu Drive (carpeta "Facturas JCRM") y te da el link para WhatsApp.', 'cli'],
+    producto: ['➕ **Producto nuevo:**\nEn “Inventario” toca **+ Nuevo producto**, llena nombre, categoría, precio, costo, stock inicial y mínimo. Si se vende por kilo, marca "Se vende por peso". El código se pone solo si lo dejas vacío.', 'inv'],
+    entrada: ['🚚 **Llegó mercancía:**\nEn “Inventario”, busca el producto y toca **+ Entrada**, pones cuántas unidades llegaron y se suman al stock.', 'inv'],
+    precio: ['🏷️ **Cambiar un precio:**\nEn “Inventario” busca el producto → **Editar** → cambia el precio en dólares → Guardar. En bolívares se calcula solo con la tasa.', 'inv'],
+    eliminar: ['🗑️ **Eliminar un producto:**\nEn “Inventario” → **Eliminar** en la fila del producto. Las ventas viejas no se borran. Ojo que no se puede deshacer.', 'inv'],
+    anular: ['↩️ **Anular una venta:**\nVe a “Resumen” → abajo en "Últimas ventas" toca **Anular** en la venta. Se borra y el stock vuelve. Si era fiado y ya tiene abonos, no se puede anular.', 'dash'],
+    arqueo: ['🧮 **Arqueo de caja:**\nEn “Caja”, pon el fondo con que abriste y el efectivo que contaste. Te digo si cuadra, si falta o si sobra. Toca **Guardar arqueo** al cerrar.', 'cash'],
+    gasto: ['💸 **Registrar un gasto:**\nEn “Gastos”: fecha, categoría (Luz, Proveedores…), detalle, monto en $ o Bs y con qué pagaste → **Registrar gasto**.', 'gas'],
+    saldo: ['⚙️ **Saldo inicial:**\nEn “Gastos” toca **⚙ Saldo inicial** y pon cuánto tenías en efectivo y en banco cuando empezaste a llevar el control.', 'gas'],
+    tasa: ['💱 **Cambiar la tasa a mano:**\nToca el botón verde de la tasa arriba a la derecha, escribe los Bs por dólar y Guardar. O me dices "actualiza la tasa" y la pongo en la del BCV.', null],
+    scan: ['📷 **Escanear:**\nEn “Punto de venta” toca el botón 📷 y apunta al código de barras. Si la cámara no abre, usa "📸 Tomar foto". También sirve una pistola lectora USB.', 'pos'],
+    cantidad: ['✖️ **Varias unidades rápido:**\nEn el buscador escribe cantidad*código, por ejemplo **3*7** = 3 unidades del código 7. O cambia la cantidad en el cuadrito al lado.', 'pos'],
+    peso: ['⚖️ **Por peso:**\nAl tocar un producto por kilo te pregunto los kilos o el monto en $ y calculo el otro. También puedes escribir **0.75*901** en el buscador.', 'pos'],
+    vuelto: ['🪙 **Vuelto:**\nCon pago en Efectivo, escribe en "Recibido" lo que te dio (en $ o Bs) y abajo te sale el vuelto en dólares y bolívares.', 'pos'],
+    bloquear: ['🔒 **Bloquear el panel:**\nToca **🔒 Bloquear** arriba. Para entrar de nuevo se pide el PIN. La sesión dura 6 horas.', null],
+    actualizar: ['🔄 **Si algo no aparece:**\nToca **🔄 Actualizar** arriba para recargar el inventario y la tasa.', null],
+    voz: ['🎙️ **Notas de voz:**\nToca el micrófono, habla normal y tócalo otra vez (o haz una pausa). Te respondo y te hablo. Con el botón 🔊 de arriba hago que siempre te responda hablando. Funciona mejor en Google Chrome.', null]
+  };
+  function guide(k) { return function () { var g = G[k]; return { t: g[0], a: g[1] ? [{ l: 'Ir allá', f: goAndClose(g[1]) }] : null }; }; }
+
+  /* ---------- intenciones (palabras clave) ----------
+     k: frases; terminadas en * = "empieza por". w: peso. need: 'data' si usa la planilla */
+  var I = [
+    { id: 'saludo', w: 0.5, k: ['hola', 'epale', 'buenas', 'buenos dias', 'buenas tardes', 'buenas noches', 'que tal', 'hey', 'saludos', 'quiubo', 'que hubo', 'que lo que', 'como estas'],
+      fn: function () { var h = new Date().getHours(); return { t: (h < 12 ? '¡Buenos días' : h < 19 ? '¡Buenas tardes' : '¡Buenas noches') + ', mi pana! 👋 ¿En qué te echo una mano?' }; } },
+    { id: 'gracias', w: 0.5, k: ['gracias', 'fino', 'chevere', 'excelente', 'perfecto', 'buenisimo', 'muy amable', 'te pasaste', 'genial'],
+      fn: function () { return { t: pick(['¡A la orden, siempre! 💙', '¡Con gusto, mi pana! 🤖', 'Para eso estoy 😎', '¡Fino! Cualquier cosa me avisas.']) }; } },
+    { id: 'chao', w: 0.6, k: ['chao', 'adios', 'nos vemos', 'hasta luego', 'bye', 'me voy'], fn: function () { return { t: '¡Chao, pues! Que se den buenas ventas 🙌' }; } },
+    { id: 'quien', k: ['quien eres', 'como te llamas', 'que eres', 'tu nombre', 'quien te creo', 'quien te hizo', 'eres un robot'],
+      fn: function () { return { t: '¡Yo! Soy **Novi** 🤖💙, el asistente virtual de **JB Nova**. Me sé tus ventas, inventario, fiados, caja, gastos y la tasa del BCV. Pregúntame escribiendo o con nota de voz.' }; } },
+    { id: 'ayuda', k: ['ayuda', 'que puedes hacer', 'que sabes', 'que haces', 'opciones', 'menu', 'comandos', 'como funcionas', 'para que sirves', 'que te puedo preguntar'], fn: rAyuda },
+    { id: 'tasaUpd', w: 1.5, k: ['actualiza la tasa', 'actualizar la tasa', 'actualizar tasa', 'actualiza tasa', 'cambia la tasa', 'pon la tasa', 'actualizala', 'cambiala', 'pon la del bcv', 'pon la tasa del bcv', 'actualiza el dolar'], fn: rTasaUpd },
+    { id: 'tasa', k: ['tasa', 'dolar', 'bcv', 'a como esta', 'a cuanto esta', 'precio del dolar', 'divisa', 'paralelo', 'monitor', 'como amanecio'], fn: function () { return rTasa(); } },
+    { id: 'ventasHoy', k: ['vendido hoy', 'ventas de hoy', 'vendimos hoy', 'venta de hoy', 'cuanto vendimos', 'cuanto he vendido', 'cuanto hemos vendido', 'cuanto llevo', 'cuanto llevamos', 'como vamos', 'como va el dia', 'vend*', 'ventas', 'facturado', 'facturamos', 'hoy'], need: 1, fn: rVentasHoy },
+    { id: 'ayer', w: 1.2, k: ['ayer', 'antier', 'anoche'], need: 1, fn: rAyer },
+    { id: 'semana', w: 1.2, k: ['semana', '7 dias', 'siete dias', 'semanal', 'ultimos dias'], need: 1, fn: rSemana },
+    { id: 'mes', w: 1.2, k: ['este mes', 'del mes', 'mensual', 'el mes', 'en el mes', 'mes'], need: 1, fn: rMes },
+    { id: 'top', w: 1.3, k: ['mas vendido', 'mas vendidos', 'mas se vende', 'mas sale', 'mas se mueve', 'top', 'producto estrella', 'mejores productos', 'lo que mas'], need: 1, fn: rTop },
+    { id: 'ultimas', w: 1.2, k: ['ultimas ventas', 'ultima venta', 'ultimos tickets', 'que se vendio', 'tickets', 'ticket'], need: 1, fn: rUltimas },
+    { id: 'reponer', k: ['reponer', 'reposicion', 'se esta acabando', 'se estan acabando', 'se acaba', 'poco stock', 'stock bajo', 'que falta', 'hay que comprar', 'que compro', 'pedir al proveedor', 'escase*', 'alerta*', 'surtir'], fn: rReponer },
+    { id: 'sinStock', w: 1.3, k: ['sin stock', 'agotado', 'agotados', 'se acabo', 'se acabaron', 'en cero'], fn: rSinStock },
+    { id: 'inventario', k: ['inventario', 'cuantos productos', 'valor del inventario', 'mercancia', 'mercaderia', 'cuanto tengo en mercancia', 'ganancia', 'margen', 'utilidad', 'capital'], fn: rInventario },
+    { id: 'deudas', k: ['me deben', 'quien me debe', 'deb*', 'deuda*', 'fiado', 'fiados', 'por cobrar', 'credito', 'morosos', 'cartera', 'cuanto me deben'], need: 1, fn: rDeudas },
+    { id: 'vencidos', w: 1.4, k: ['vencido', 'vencidos', 'atrasado', 'atrasados', 'moroso', 'no han pagado', 'no ha pagado', 'retrasado', 'se paso de la fecha'], need: 1, fn: rVencidos },
+    { id: 'prox', w: 1.4, k: ['proximos pagos', 'proximos cobros', 'cobros de la semana', 'quien me paga', 'quien paga', 'toca cobrar', 'cobrar esta semana', 'pagos que vienen'], need: 1, fn: rProxCobros },
+    { id: 'caja', k: ['caja', 'cuanto hay en caja', 'efectivo', 'cuadre', 'cuadra', 'cierre', 'pago movil', 'tarjeta', 'punto de venta hoy', 'gaveta'], need: 1, fn: rCaja },
+    { id: 'gastos', k: ['gast*', 'egresos', 'cuanto se fue', 'en que se fue'], need: 1, fn: rGastos },
+    { id: 'dinero', k: ['dinero', 'plata', 'real', 'reales', 'cuanto tengo', 'saldo del negocio', 'banco', 'cuanta plata', 'cuanto dinero', 'billete', 'balance'], need: 1, fn: rDinero },
+    { id: 'resumen', w: 1.3, k: ['resumen', 'como estamos', 'como va todo', 'reporte', 'dame todo', 'novedades', 'como va el negocio', 'informe', 'como vamos en general'], need: 1, fn: rResumen },
+    { id: 'consejo', w: 1.3, k: ['consejo', 'consejos', 'recomendacion', 'recomiendas', 'que hago', 'sugerencia', 'tips', 'como mejorar', 'ideas', 'que me aconsejas'], need: 1, fn: rConsejo },
+    { id: 'fecha', k: ['que dia es', 'fecha', 'que hora', 'hora es'], fn: rFecha },
+    { id: 'chiste', w: 1.2, k: ['chiste', 'echame un cuento', 'hazme reir', 'algo gracioso', 'cuentame algo'], fn: function () { return { t: pick(CHISTES) }; } },
+    { id: 'noEntendi', w: 1.5, k: ['que no entendiste', 'que no sabes', 'preguntas sin respuesta'], fn: function () {
+        var l = []; try { l = JSON.parse(localStorage.getItem('nv_unknown') || '[]'); } catch (e) {}
+        return { t: l.length ? '📝 Esto me preguntaron y no lo supe responder (pásaselo a JB Nova para nutrirme):\n\n' + l.slice(-15).map(function (x) { return '• ' + x; }).join('\n') : '¡Hasta ahora he entendido todo! 😎' };
+      } },
+    // guía
+    { id: 'g_vender', w: 1.2, k: ['como vendo', 'como cobro', 'hacer una venta', 'registrar venta', 'como cobrar', 'como facturo', 'como se vende'], fn: guide('vender') },
+    { id: 'g_fiado', w: 1.4, k: ['como fio', 'vender fiado', 'vendo fiado', 'como vendo fiado', 'venta a credito', 'fiar', 'hacer un fiado', 'venta fiada', 'dar fiado', 'a credito', 'cuotas', 'como fiar'], fn: guide('fiado') },
+    { id: 'g_abono', w: 1.3, k: ['registrar abono', 'como abono', 'cliente pago', 'me pago', 'abonar', 'cobrar fiado', 'registrar pago', 'anotar abono', 'abono'], fn: guide('abono') },
+    { id: 'g_record', w: 1.2, k: ['recordatorio', 'whatsapp', 'mandar mensaje', 'cobrar por whatsapp'], fn: guide('recordatorio') },
+    { id: 'g_factura', w: 1.2, k: ['factura', 'pdf', 'comprobante'], fn: guide('factura') },
+    { id: 'g_producto', w: 1.3, k: ['agregar producto', 'producto nuevo', 'nuevo producto', 'crear producto', 'registrar producto', 'cargar producto', 'agregar un producto'], fn: guide('producto') },
+    { id: 'g_entrada', w: 1.3, k: ['entrada', 'llego mercancia', 'llego mercaderia', 'sumar stock', 'agregar stock', 'cargar stock', 'meter mercancia', 'llego el pedido'], fn: guide('entrada') },
+    { id: 'g_precio', w: 1.3, k: ['cambiar precio', 'cambiar el precio', 'editar precio', 'subir precio', 'subir el precio', 'modificar precio', 'editar producto'], fn: guide('precio') },
+    { id: 'g_eliminar', w: 1.3, k: ['eliminar producto', 'borrar producto', 'quitar producto', 'eliminar un producto'], fn: guide('eliminar') },
+    { id: 'g_anular', w: 1.4, k: ['anular', 'anulo', 'devolver venta', 'devolucion', 'borrar venta', 'borrar una venta', 'me equivoque', 'cancelar venta'], fn: guide('anular') },
+    { id: 'g_arqueo', w: 1.3, k: ['como hago el arqueo', 'hacer arqueo', 'arqueo', 'cerrar caja', 'cuadrar caja', 'como cuadro'], fn: guide('arqueo') },
+    { id: 'g_gasto', w: 1.3, k: ['registrar gasto', 'registrar un gasto', 'anotar gasto', 'cargar gasto', 'como registro un gasto', 'anotar un gasto'], fn: guide('gasto') },
+    { id: 'g_saldo', w: 1.4, k: ['saldo inicial'], fn: guide('saldo') },
+    { id: 'g_tasa', w: 1.4, k: ['tasa a mano', 'como cambio la tasa', 'tasa manual', 'cambiar la tasa yo'], fn: guide('tasa') },
+    { id: 'g_scan', w: 1.3, k: ['escanear', 'escaneo', 'camara', 'codigo de barras', 'pistola', 'lector'], fn: guide('scan') },
+    { id: 'g_cantidad', w: 1.2, k: ['varias unidades', 'varios del mismo', 'multiplicar', 'como pongo cantidad'], fn: guide('cantidad') },
+    { id: 'g_peso', w: 1.3, k: ['por peso', 'por kilo', 'gramos', 'pesar', 'balanza'], fn: guide('peso') },
+    { id: 'g_vuelto', w: 1.4, k: ['vuelto', 'dar vuelto', 'calcular vuelto'], fn: guide('vuelto') },
+    { id: 'g_bloquear', w: 1.3, k: ['bloquear', 'pin', 'clave', 'contrasena', 'cerrar sesion'], fn: guide('bloquear') },
+    { id: 'g_actualizar', w: 1.2, k: ['refrescar', 'no aparece', 'recargar', 'no sale el producto'], fn: guide('actualizar') },
+    { id: 'g_voz', w: 1.3, k: ['nota de voz', 'notas de voz', 'microfono', 'como te hablo', 'escucharte'], fn: guide('voz') }
+  ];
+  NOVI_FAQ.forEach(function (f, i) { I.push({ id: 'faq' + i, w: 1.5, k: f.p.map(norm), fn: function () { return { t: f.r }; } }); });
+  I.forEach(function (it) { it.k.forEach(function (p) { p.replace('*', '').split(' ').forEach(function (w) { if (w.length >= 3) KW[w] = 1; }); }); });
+
+  function score(it, t) {
+    var s = 0, tt = ' ' + t + ' ';
+    it.k.forEach(function (p) {
+      var hit = /\*$/.test(p) ? tt.indexOf(' ' + p.slice(0, -1)) >= 0 : tt.indexOf(' ' + p + ' ') >= 0;
+      if (hit) s += p.split(' ').length;
+    });
+    return s * (it.w || 1);
+  }
+
+  var TABS = [['pos', ['punto de venta', 'vender', 'pos', 'cobrar', 'carrito']], ['inv', ['inventario', 'productos']], ['cli', ['clientes', 'cliente', 'fiados']],
+    ['cash', ['caja', 'arqueo']], ['gas', ['gastos', 'gasto']], ['dash', ['resumen', 'dashboard', 'estadisticas']]];
+  var TAB_NAME = { pos: 'Punto de venta', inv: 'Inventario', cli: 'Clientes', cash: 'Caja', gas: 'Gastos', dash: 'Resumen' };
+
+  function route(raw) {
+    var t = norm(raw);
+    if (!t) return null;
+    // 1) navegar: "llévame a inventario", "abre caja"
+    if (/^(abre|abrir|llevame|ir a|ve a|vamos a|muestrame|pasame|entra|abreme)\b/.test(t)) {
+      for (var i = 0; i < TABS.length; i++) {
+        if (TABS[i][1].some(function (w) { return (' ' + t + ' ').indexOf(' ' + w + ' ') >= 0; })) {
+          var tab = TABS[i][0];
+          return { fn: function () { setTimeout(goAndClose(tab), 700); return { t: 'Dale, te llevo a **' + TAB_NAME[tab] + '** 🚀' }; } };
+        }
+      }
+    }
+    // 2) convertir montos: "20 dólares en bs", "cuánto es 500 bs"
+    var nn = String(raw).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    var m = nn.match(/\$\s*(\d+(?:[.,]\d+)?)/) || nn.match(/(\d+(?:[.,]\d+)?)\s*(\$|dolares|dolar|usd|verdes|bs\b|bs\.|bolivares|bolivar|bolos|lucas)/);
+    if (m && !/vend|gast|deb|cobr/.test(t)) {
+      var cur = m[2] || '$';
+      return { fn: function () { return rConvert({ v: m[1], usd: /\$|dolar|usd|verde/.test(cur) }); } };
+    }
+    // 3) intenciones + productos + clientes
+    var best = null, bs_ = 0;
+    I.forEach(function (it) { var s = score(it, t); if (s > bs_) { bs_ = s; best = it; } });
+    var fp = findProducts(t), pTrig = /(precio|cuesta|cuestan|vale|valen|cuanto sale|cuanto esta|stock de|hay |quedan|queda|tienes|tenemos|existencia|cuantos? .* quedan)/.test(t + ' ') ? 1 : 0;
+    var pScore = fp.list.length ? fp.score * 1.5 + pTrig : 0;
+    var fc = findClients(t), cTrig = /(debe|deuda|saldo|cuenta de|fiado de|abono de|le fie|cliente)/.test(t) ? 1.2 : 0;
+    var cScore = fc.list.length ? fc.score * 1.5 + cTrig : 0;
+    if (cScore > 0 && cTrig && cScore >= bs_ && cScore >= pScore) return { need: 1, fn: function (d) { return rCliente(fc, d); } };
+    if (pScore > bs_ && pScore >= 1.5) return { fn: function () { return rProducto(fp); } };
+    if (cScore > bs_ && cScore >= 1.5) return { need: 1, fn: function (d) { return rCliente(fc, d); } };
+    if (best && bs_ >= 0.5) return best;
+    return null;
+  }
+
+  function ask(txt, viaVoice) {
+    lastWasVoice = !!viaVoice;
+    addMe(txt);
+    var row = typing();
+    var r = route(txt);
+    if (!r) {
+      try { var l = JSON.parse(localStorage.getItem('nv_unknown') || '[]'); l.push(txt); localStorage.setItem('nv_unknown', JSON.stringify(l.slice(-50))); } catch (e) {}
+      setTimeout(function () {
+        say(pick(['Mmm, esa no me la sé todavía 🤔.', 'Uy, no te capté, chamo 😅.', 'Esa se me escapó 🙈.']) + ' Prueba preguntándome con otras palabras, o toca uno de los botones de abajo 👇');
+        row.remove();
+      }, 450);
+      return;
+    }
+    var p = r.need ? loadData() : Promise.resolve(null);
+    p.then(function (d) { return r.fn(d); })
+      .then(function (res) { setTimeout(function () { say(res.t, res.a, row); }, 350); })
+      .catch(function (e) { say('Se me complicó buscar eso 😕: ' + e.message + '\nIntenta de nuevo en un momentico.', null, row); });
+  }
+
+  /* ---------- abrir / cerrar ---------- */
+  function badge(n) {
+    var f = el('nvFab'), d = f.querySelector('.nv-dot');
+    if (!d) { d = document.createElement('span'); d.className = 'nv-dot'; f.appendChild(d); }
+    d.textContent = n;
+  }
+  function clearBadge() { var d = el('nvFab').querySelector('.nv-dot'); if (d) d.remove(); }
+  function hint(txt, ms) {
+    var h = el('nvHint'); h.textContent = txt; h.classList.remove('hidden');
+    clearTimeout(hint._t); hint._t = setTimeout(function () { h.classList.add('hidden'); }, ms || 6000);
+  }
+  function open() {
+    isOpen = true; el('nvHint').classList.add('hidden');
+    el('nvPanel').classList.remove('hidden'); el('nvFab').classList.add('open');
+    el('nvFab').innerHTML = '<span style="color:#fff;font-size:26px;font-weight:300">✕</span>';
+    if (!heroShown) {
+      hero();
+      var h = new Date().getHours();
+      say((h < 12 ? '¡Buenos días' : h < 19 ? '¡Buenas tardes' : '¡Buenas noches') + '! 👋 Pregúntame lo que necesites del negocio: ventas, inventario, fiados, caja, gastos o la tasa. También me puedes mandar **notas de voz** 🎙️');
+    }
+    while (pending.length) { var p = pending.shift(); say(p.t, p.a); }
+    loadData().catch(function () {});
+    if (window.innerWidth > 640) setTimeout(function () { el('nvIn').focus(); }, 200);
+  }
+  function close() {
+    isOpen = false; el('nvPanel').classList.add('hidden'); el('nvFab').classList.remove('open');
+    el('nvFab').innerHTML = bot('nv-float');
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    if (recOn && rec) rec.stop();
+  }
+
+  /* ---------- arranque (se llama cuando el panel termina de cargar) ---------- */
+  function boot() {
+    el('nvFab').classList.remove('hidden');
+    if (booted) return;
+    booted = true;
+    el('nvFab').innerHTML = bot('nv-float');
+    el('nvAv').innerHTML = bot();
+    chips(); setVoiceBtn();
+    el('nvFab').onclick = function () { isOpen ? close() : open(); };
+    el('nvHint').onclick = open;
+    el('nvClose').onclick = close;
+    el('nvVoice').onclick = function () {
+      voiceAlways = !voiceAlways; try { localStorage.setItem('nv_voice', voiceAlways ? '1' : '0'); } catch (e) {}
+      setVoiceBtn(); if (voiceAlways) speak('Listo, ahora te respondo hablando.'); else if (window.speechSynthesis) speechSynthesis.cancel();
+    };
+    el('nvMic').onclick = micToggle;
+    el('nvSend').onclick = function () { var v = el('nvIn').value.trim(); if (v) { el('nvIn').value = ''; ask(v, false); } };
+    el('nvIn').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); el('nvSend').click(); } });
+    el('nvChips').onclick = function (e) { var b = e.target.closest('button'); if (b) ask(CHIPS[+b.dataset.i][1].replace(/^./, function (c) { return c.toUpperCase(); }), false); };
+    setTimeout(function () { hint('¡Yo! Soy Novi. ¿Te ayudo? 🤖', 5000); }, 1200);
+
+    // Revisión automática de la tasa BCV (una vez por día y por valor)
+    loadTasa().then(function (t) {
+      if (!(t.bcv > 0) || Math.abs(t.bcv - S.rate) <= 0.009) return;
+      var key = 'nv_tasa_' + today() + '_' + t.bcv;
+      try { if (localStorage.getItem(key)) return; localStorage.setItem(key, '1'); } catch (e) {}
+      badge(1);
+      setTimeout(function () { hint('¡Épale! Salió la tasa BCV de hoy: ' + fmtRate(t.bcv) + ' 👀', 9000); }, 6500);
+      rTasa(true).then(function (res) { if (isOpen) say(res.t, res.a); else pending.push(res); });
+    }).catch(function () {});
+  }
+
+  return { boot: boot, open: open, close: close, ask: ask };
+})();
+</script>
+
 </body>
 </html>
